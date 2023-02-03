@@ -45,10 +45,9 @@ class Field:
             "_u": Clave foranea uno a uno
         """
         
-        self.selectValues = list()
+        self.values = list()
         """
-            si subtype = "select_text", deben asignarse valores "text"
-            si subtype = "select_int", deben asignarse valores "int"
+            lista de valores permitidos
         """
     
 

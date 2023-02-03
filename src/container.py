@@ -69,29 +69,6 @@ class Container(IContainer):
                     for k, v in e2.items():
                         if k not in cls._entitiesConfig:
                             cls._entitiesConfig[k] = e2[k]
-    @classmethod
-    def fieldsConfig(cls, entityName):
-        if entityName not in cls._fieldsConfig:
-            with open(cls.config["path_model"]+"fields/_"+entityName+".json", 'r', encoding='utf-8') as file:
-                cls._fieldsConfig[entityName] = json.load(file)
-
-            if exists(cls.config["path_model"]+"fields/"+entityName+".json"):
-                with open(cls.config["path_model"]+"fields/"+entityName+".json", 'r', encoding='utf-8') as file:
-                    e2 = json.load(file)
-
-                    for k, v in cls._fieldsConfig[entityName].items():
-                        if k in e2:
-                            cls._fieldsConfig[entityName][k].update(e2[k])
-
-                    for k, v in e2.items():
-                        if k not in cls._fieldsConfig[entityName]:
-                            cls._fieldsConfig[entityName][k] = e2[k]
-
-    @classmethod
-    def _initEntity(cls):
-        for entityName in cls.entityNames():
-            cls._entity[entityName] = Entity(cls._entitiesConfig[entityName])
-            cls._entity[entityName].container = cls
 
     @classmethod
     def init(cls, config):
@@ -99,7 +76,6 @@ class Container(IContainer):
         cls._initTree()
         cls._initRelations()
         cls._initEntitiesConfig()
-        cls._initEntity()
 
     @classmethod
     def db_connect(cls) -> MySQLConnection:
@@ -129,52 +105,65 @@ class Container(IContainer):
         cls.db_connections -= 1
 
     @classmethod
-    def tree(cls, entityName = None) -> dict:
-        if not entityName: 
-          return cls._tree
+    def treeConfig(cls) -> dict:
+        return cls._tree
 
-        if entityName in cls._tree:
-            return cls._tree[entityName]
-
-        return dict()
+    classmethod
+    def relationsConfig(cls) -> dict:
+        return cls._relations     
 
     @classmethod
-    def relations(cls, entityName = None) -> dict:
-        if not entityName: 
-          return cls._relations
-
-        if entityName in cls._relations:
-            return cls._relations[entityName]
-
-        return dict()
-
-    @classmethod
-    def entities(cls):
+    def entitiesConfig(cls):
         return cls._entitiesConfig
+
+    @classmethod
+    def fieldsConfig(cls, entityName):
+        if entityName not in cls._fieldsConfig:
+            with open(cls.config["path_model"]+"fields/_"+entityName+".json", 'r', encoding='utf-8') as file:
+                cls._fieldsConfig[entityName] = json.load(file)
+
+            if exists(cls.config["path_model"]+"fields/"+entityName+".json"):
+                with open(cls.config["path_model"]+"fields/"+entityName+".json", 'r', encoding='utf-8') as file:
+                    e2 = json.load(file)
+
+                    for k, v in cls._fieldsConfig[entityName].items():
+                        if k in e2:
+                            cls._fieldsConfig[entityName][k].update(e2[k])
+
+                    for k, v in e2.items():
+                        if k not in cls._fieldsConfig[entityName]:
+                            cls._fieldsConfig[entityName][k] = e2[k]
+
+        return cls._fieldsConfig[entityName] 
+        
+    @classmethod
+    def tree(cls, entityName) -> dict:
+        return cls._tree[entityName]
+
+    @classmethod
+    def relations(cls, entityName) -> dict:
+        return cls._relations[entityName]       
     
     @classmethod
     def entityNames(cls):
         return cls.tree().keys()
     
     @classmethod
-    def entity(cls, entityName = None):
-        if not entityName: 
-            return cls._entity
+    def entity(cls, entityName):
+        if entityName not in cls._entity:
+            cls._entity[entityName] = Entity(cls._entitiesConfig[entityName])
+            cls._entity[entityName].container = cls
 
-        if entityName in cls._entity:
-            return cls._entity[entityName]
-
-        return None
+        return cls._entity[entityName]
 
     @classmethod
     def field(cls, entityName, fieldName):
         if entityName not in cls._field:
             cls._field[entityName] = dict()
 
-        if fieldName in cls._field[entityName]:
-            return cls._field[entityName][fieldName]
+        if fieldName not in cls._field[entityName]:
+            cfg = cls.fieldsConfig(entityName)[fieldName]
+            cls._field[entityName][fieldName] = Field(cfg)
+            cls._field[entityName][fieldName].container = cls
 
-        cfg = cls.fieldsConfig(entityName)[fieldName]
-        cls._field[entityName][fieldName] = Field(cfg)
-        cls._field[entityName][fieldName].container = cls
         return cls._field[entityName][fieldName]
