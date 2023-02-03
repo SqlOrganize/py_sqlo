@@ -15,7 +15,8 @@ config = {
 }
 
 Container.init(config)
-pprint(vars(Container.field("persona","nombres")))
+pprint(vars(Container.query("persona")))
+# pprint(vars(Container.field("persona","nombres")))
 # json_formatted_str = json.dumps(Container.entities(), indent=2)
 
 # print(json_formatted_str)

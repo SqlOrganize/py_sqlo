@@ -5,6 +5,7 @@ from os.path import exists
 from icontainer import IContainer
 
 from model.entity import Entity
+from model.entity_query import EntityQuery
 from model.field import Field
 
 class Container(IContainer):
@@ -167,3 +168,9 @@ class Container(IContainer):
             cls._field[entityName][fieldName].container = cls
 
         return cls._field[entityName][fieldName]
+
+    @classmethod
+    def query(cls, entityName):
+        q = EntityQuery(entityName)
+        q.container = cls
+        return q
