@@ -43,23 +43,18 @@ class EntityQuery:
     def params (self, params:dict):
         for k,v in params.items():
             self.cond([k,"=",v])
-        return 
+        return self
 
     def order (self, order:dict):
         self._order = order
         return self
     
-    def pagination(self, size, page):
-        self.size = size
-        self.page = page
-        return self
-
     def size(self, size):
-        self.size = size
+        self._size = size
         return self
     
     def page(self, page):
-        self.page = page
+        self._page = page
         return self
 
     def field(self, field: str):
