@@ -99,15 +99,15 @@ class Entity:
         return Entity.container.field(self.name(), "id")
 
     def nf(self):
-        "no fk"
+        "fields no fk"
         return self._fields(self._nf)
 
     def mo(self):
-        "many to one"
+        "fields many to one"
         return self._fields(self._mu)
 
     def oo(self):
-        "one to one left"
+        "fields one to one (local fk)"
         return self._fields(self.__u)
 
     def _fields(self, fieldNames):
@@ -117,38 +117,58 @@ class Entity:
         return fields
 
     def fk(self):
+        "fields fk (mo and oo)"
         return self.mo() + self.oo()
 
+    def fieldsNoPk(self):
+        "all fields except pk"
+        return self.nf()+self.mo()+self.oo()
+
     def fields(self):
+        "all fields pk and fk (mo and oo)"
         l = self.fieldsNoPk()
         l.insert(0, self.pk())
         return l
     
-
-    def fieldsNoPk(self):
-        return self.nf()+self.mo()+self.oo()
-
-
-    def um():
+    def om(self):
+        """
+        fields one to many
+        its neccesary to iterate over all entities
+        """
         fields = []
-        
-    foreach($this->getStructure() as $entity){
-      foreach($entity->getFieldsMu() as $field){
-        if($field->getEntityRef()->getName() == $this->getName()){
-          array_push($fields, $field);
-        }
-      }
-    }
-    return $fields;
-  }
+        for entityName in Entity.container.entityNames():
+            e = Entity.container.entity(entityName)
+            for f in e.mo():
+                if f.entityRefName() == self.name():
+                    fields.append(f)
 
+        return fields
 
-    def ref():
-        return array_merge($this->getFieldsUm(), $this->getFieldsU_()); } //ref (um y u_)
+    def oo_(self):
+        """
+        fields one to one
+        fk pointed to this entity
+        its neccesary to iterate over all entities
+        """
+        fields = []
+        for entityName in Entity.container.entityNames():
+            e = Entity.container.entity(entityName)
+            for f in e.oo():
+                if f.entityRefName() == self.name():
+                    fields.append(f)
+
+        return fields
+
+    def ref(self):
+        return self.om()+self.oo()
+    
+    def orderDefault(self):
+        return self._orderDefault
+
+    def fieldNames(self)
+        return Entity.container.fieldNames(self.name())
 
     
-    
-
     
 
 

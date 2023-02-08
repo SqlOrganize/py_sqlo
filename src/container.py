@@ -6,6 +6,7 @@ from icontainer import IContainer
 
 from model.entity import Entity
 from model.entity_query import EntityQuery
+from model.entity_tools import EntityTools
 from model.field import Field
 
 class Container(IContainer):
@@ -148,6 +149,10 @@ class Container(IContainer):
     @classmethod
     def entityNames(cls):
         return cls.tree().keys()
+
+    @classmethod
+    def fieldNames(cls, entityName):
+        return cls.fieldsConfig(entityName).keys()
     
     @classmethod
     def entity(cls, entityName):
@@ -172,5 +177,11 @@ class Container(IContainer):
     @classmethod
     def query(cls, entityName):
         q = EntityQuery(entityName)
+        q.container = cls
+        return q
+
+    @classmethod
+    def query(cls, entityName):
+        q = EntityTools(entityName)
         q.container = cls
         return q

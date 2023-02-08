@@ -9,5 +9,9 @@ class EntityTools:
         self._entityName = entityName
 
     def fieldNames(self):
-        EntityTools.container.entity(self._entityName).getFieldNames()
-        for key, value in EntityTools.container.relations(self._entityName):
+        "fieldNames from entityName and its relations"
+        for fieldId, config in EntityTools.container.relations(self._entityName):
+            fieldNamesR = [fieldId+"-"+fieldName for fieldName in EntityTools.container.fieldNames(config["entity_name"])]
+
+        return EntityTools.container.fieldNames(self._entityName) + fieldNamesR
+
