@@ -165,7 +165,7 @@ class Entity:
     def orderDefault(self):
         return self._orderDefault
 
-    def fieldNames(self)
+    def fieldNames(self):
         return Entity.container.fieldNames(self.name())
 
     

@@ -39,6 +39,9 @@ class Container(IContainer):
     _entity:dict = dict()
     "instances of Entity"
 
+    _tools:dict = dict()
+    "instances of Tools"
+
     _field:dict = dict()
     "instances of Field"
 
@@ -78,6 +81,9 @@ class Container(IContainer):
         cls._initTree()
         cls._initRelations()
         cls._initEntitiesConfig()
+        Entity.container = cls
+        EntityQuery.container = cls
+        EntityTools.container = cls
 
     @classmethod
     def db_connect(cls) -> MySQLConnection:
@@ -147,41 +153,38 @@ class Container(IContainer):
         return cls._relations[entityName]       
     
     @classmethod
-    def entityNames(cls):
-        return cls.tree().keys()
+    def entityNames(cls) -> list:
+        return list(cls.tree().keys())
 
     @classmethod
-    def fieldNames(cls, entityName):
-        return cls.fieldsConfig(entityName).keys()
+    def fieldNames(cls, entityName) -> list:
+        return list(cls.fieldsConfig(entityName).keys())
     
     @classmethod
-    def entity(cls, entityName):
+    def entity(cls, entityName) -> Entity:
         if entityName not in cls._entity:
             cls._entity[entityName] = Entity(cls._entitiesConfig[entityName])
-            cls._entity[entityName].container = cls
 
         return cls._entity[entityName]
 
     @classmethod
-    def field(cls, entityName, fieldName):
+    def field(cls, entityName, fieldName) -> Field:
         if entityName not in cls._field:
             cls._field[entityName] = dict()
 
         if fieldName not in cls._field[entityName]:
             cfg = cls.fieldsConfig(entityName)[fieldName]
             cls._field[entityName][fieldName] = Field(cfg)
-            cls._field[entityName][fieldName].container = cls
 
         return cls._field[entityName][fieldName]
 
     @classmethod
-    def query(cls, entityName):
-        q = EntityQuery(entityName)
-        q.container = cls
-        return q
+    def query(cls, entityName) -> EntityQuery:
+        return EntityQuery(entityName)
 
     @classmethod
-    def query(cls, entityName):
-        q = EntityTools(entityName)
-        q.container = cls
-        return q
+    def tools(cls, entityName) -> EntityTools:
+        if entityName not in cls._tools:
+            cls._tools[entityName] = EntityTools(entityName)
+
+        return cls._tools[entityName]

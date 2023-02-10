@@ -69,38 +69,23 @@ class EntityQuery:
         return self
 
     def fieldsTree(self):
-        pass
-        self._fields
+        self._fields = EntityQuery.container.tools(self._entityName).fieldNames()
         return self
-    $this->fields = $this->container->tools($this->entityName)->fieldNames();
-    return $this;
-  }
 
-  public function group(array $group = null) { 
-    $this->group = array_merge($this->group, $group); 
-    return $this;
-  }
+    def group(self, group: list):
+        self._group = list(set(self._group + group))
+        return self
 
-  public function having(array $having = null) { 
-    if(!empty($having)) array_push ( $this->having, $having );
-    return $this;
-  }
+    def having(self, having: list):
+        self._having.append(having)
+        return self
 
-  public function entityName (array $entityName = null) { 
-    $this->entityName = $entityName; 
-    return $this;
-  }
+    def entityName(self, entityName: str):
+        self._entityName = entityName
+        return self
 
-  protected function addPrefixRecursive(array &$condition, $prefix){
-    if(!key_exists(0, $condition)) return;
-    if(is_array($condition[0])) {
-      foreach($condition as &$value) $this->addPrefixRecursive($value,$prefix);  
-    } else {
-        $condition[0] = $prefix.$condition[0];
-    }
-    return $this;
-  }
 
+    """
   public function addPrefix($prefix){
     $this->addPrefixRecursive($this->condition, $prefix);
     
@@ -566,3 +551,4 @@ class EntityQuery:
   }
 }
 
+"""

@@ -1,5 +1,7 @@
 from abc import abstractmethod
 
+from model.entity_query import EntityQuery
+
 class IContainer:
     """ Container interface.
     """
@@ -47,3 +49,9 @@ class IContainer:
     @abstractmethod
     def field(cls, entityName, fieldName = None):
         pass
+
+    @classmethod
+    @abstractmethod
+    def tools(cls, entityName):
+        pass
+
