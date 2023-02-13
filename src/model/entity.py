@@ -1,6 +1,6 @@
 
 
-from icontainer import IContainer
+from src.icontainer import IContainer
 
 class Entity:
     container: IContainer
@@ -11,8 +11,8 @@ class Entity:
         self._schema = None
         
         self._nf = []
-        self._mu = []
-        self.__u = []
+        self._mo = []
+        self._oo = []
         self._identifier = None
         """ 
         array dinamico para identificar univocamente a una entidad en un momento determinado
@@ -20,13 +20,13 @@ class Entity:
         identifier = ["fecha_anio", "fecha_semestre","persona-numero_documento"]
         """
 
-        self._orderDefault = []
+        self._order_default = []
         """
         Valores por defecto para ordenamiento
         @example ["field1"=>"asc","field2"=>"desc",...];
         """
 
-        self._noAdmin = []
+        self._no_admin = []
         """
         Valores no administrables
         @example ["field1","field2",...]
@@ -44,7 +44,7 @@ class Entity:
         @example ["field1","field2",...]
         """
     
-        self._uniqueMultiple = []
+        self._unique_multiple = []
         """
         Valores unicos
         @example ["field1","field2",...]
@@ -104,11 +104,11 @@ class Entity:
 
     def mo(self):
         "fields many to one"
-        return self._fields(self._mu)
+        return self._fields(self._mo)
 
     def oo(self):
         "fields one to one (local fk)"
-        return self._fields(self.__u)
+        return self._fields(self._oo)
 
     def _fields(self, fieldNames):
         fields = []
@@ -120,13 +120,13 @@ class Entity:
         "fields fk (mo and oo)"
         return self.mo() + self.oo()
 
-    def fieldsNoPk(self):
+    def fields_no_pk(self):
         "all fields except pk"
         return self.nf()+self.mo()+self.oo()
 
     def fields(self):
         "all fields pk and fk (mo and oo)"
-        l = self.fieldsNoPk()
+        l = self.fields_no_pk()
         l.insert(0, self.pk())
         return l
     
@@ -136,25 +136,25 @@ class Entity:
         its neccesary to iterate over all entities
         """
         fields = []
-        for entityName in Entity.container.entityNames():
+        for entityName in Entity.container.entity_names():
             e = Entity.container.entity(entityName)
             for f in e.mo():
-                if f.entityRefName() == self.name():
+                if f.entity_ref_name() == self.name():
                     fields.append(f)
 
         return fields
 
-    def oo_(self):
+    def oon(self):
         """
-        fields one to one
-        fk pointed to this entity
+        fields one to one without local fk
+        fk pointed to entity outside
         its neccesary to iterate over all entities
         """
         fields = []
-        for entityName in Entity.container.entityNames():
+        for entityName in Entity.container.entity_names():
             e = Entity.container.entity(entityName)
             for f in e.oo():
-                if f.entityRefName() == self.name():
+                if f.entity_ref_name() == self.name():
                     fields.append(f)
 
         return fields
@@ -162,11 +162,11 @@ class Entity:
     def ref(self):
         return self.om()+self.oo()
     
-    def orderDefault(self):
-        return self._orderDefault
+    def order_default(self):
+        return self._order_default
 
-    def fieldNames(self):
-        return Entity.container.fieldNames(self.name())
+    def field_names(self):
+        return Entity.container.field_names(self.name())
 
     
     

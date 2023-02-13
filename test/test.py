@@ -1,9 +1,8 @@
 import sys
-import json
+sys.path.insert(0, "../")
 
-sys.path.insert(0, "../src")
-
-from container import Container
+from src.config import *
+from src.container import Container
 from pprint import pprint
 
 config = {
@@ -15,9 +14,19 @@ config = {
 }
 
 Container.init(config)
-tools = Container.tools("toma")
-pprint(tools.fieldNames())
-# pprint(vars(tools))
+
+e = Container.entity("sede")
+pprint(vars(e))
+
+query = Container.query("toma").cond([
+    [
+        ["cond1", EQUAL, "value1"],
+        ["cond2", EQUAL, "value2"],
+    ],
+    ["cond3", APPROX, "value3"],
+]).order({"cond1":"ASC", "cond2":"DESC"}).add_prefix("pre-")
+
+pprint(vars(query))
 
 # print(Container.tools("persona").fieldNames())
 # pprint(vars(Container.query("persona")))

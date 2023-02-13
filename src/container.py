@@ -2,12 +2,12 @@ import mysql.connector
 from mysql.connector.connection import MySQLConnection
 import json
 from os.path import exists
-from icontainer import IContainer
+from src.icontainer import IContainer
 
-from model.entity import Entity
-from model.entity_query import EntityQuery
-from model.entity_tools import EntityTools
-from model.field import Field
+from src.model.entity import Entity
+from src.model.entity_query import EntityQuery
+from src.model.entity_tools import EntityTools
+from src.model.field import Field
 
 class Container(IContainer):
     """ Dependency injection cls.
@@ -46,19 +46,19 @@ class Container(IContainer):
     "instances of Field"
 
     @classmethod
-    def _initTree(cls):
+    def _init_tree(cls):
         if not cls._tree:
             with open(cls.config["path_model"]+"entity-tree.json", 'r', encoding='utf-8') as file:
                 cls._tree = json.load(file)
 
     @classmethod
-    def _initRelations(cls):
+    def _init_relations(cls):
         if not cls._relations:
             with open(cls.config["path_model"]+"entity-relations.json", 'r', encoding='utf-8') as file:
                 cls._relations = json.load(file)
 
     @classmethod
-    def _initEntitiesConfig(cls):
+    def _init_entities_config(cls):
         if not cls._entitiesConfig:
             with open(cls.config["path_model"]+"_entities.json", 'r', encoding='utf-8') as file:
                 cls._entitiesConfig = json.load(file)
@@ -78,9 +78,9 @@ class Container(IContainer):
     @classmethod
     def init(cls, config):
         cls.config = config
-        cls._initTree()
-        cls._initRelations()
-        cls._initEntitiesConfig()
+        cls._init_tree()
+        cls._init_relations()
+        cls._init_entities_config()
         Entity.container = cls
         EntityQuery.container = cls
         EntityTools.container = cls
@@ -113,19 +113,19 @@ class Container(IContainer):
         cls.db_connections -= 1
 
     @classmethod
-    def treeConfig(cls) -> dict:
+    def tree_config(cls) -> dict:
         return cls._tree
 
     classmethod
-    def relationsConfig(cls) -> dict:
+    def relations_config(cls) -> dict:
         return cls._relations     
 
     @classmethod
-    def entitiesConfig(cls):
+    def entities_config(cls):
         return cls._entitiesConfig
 
     @classmethod
-    def fieldsConfig(cls, entityName):
+    def fields_config(cls, entityName) -> dict:
         if entityName not in cls._fieldsConfig:
             with open(cls.config["path_model"]+"fields/_"+entityName+".json", 'r', encoding='utf-8') as file:
                 cls._fieldsConfig[entityName] = json.load(file)
@@ -153,12 +153,12 @@ class Container(IContainer):
         return cls._relations[entityName]       
     
     @classmethod
-    def entityNames(cls) -> list:
+    def entity_names(cls) -> list:
         return list(cls.tree().keys())
 
     @classmethod
-    def fieldNames(cls, entityName) -> list:
-        return list(cls.fieldsConfig(entityName).keys())
+    def field_names(cls, entityName) -> list:
+        return list(cls.fields_config(entityName).keys())
     
     @classmethod
     def entity(cls, entityName) -> Entity:
@@ -173,7 +173,7 @@ class Container(IContainer):
             cls._field[entityName] = dict()
 
         if fieldName not in cls._field[entityName]:
-            cfg = cls.fieldsConfig(entityName)[fieldName]
+            cfg = cls.fields_config(entityName)[fieldName]
             cls._field[entityName][fieldName] = Field(cfg)
 
         return cls._field[entityName][fieldName]

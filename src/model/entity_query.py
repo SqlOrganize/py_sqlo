@@ -1,19 +1,24 @@
 
+from src.function.add_prefix_multi_list import add_prefix_multi_list
+from src.function.add_prefix_dict import add_prefix_dict
+from src.function.remove_prefix_multi_list import remove_prefix_multi_list
+from src.function.remove_prefix_dict import remove_prefix_dict
 
-from icontainer import IContainer
+from src.icontainer import IContainer
+from src.model.entity import Entity
 
 class EntityQuery:
     container: IContainer
 
-    def __init__(self, entityName) -> None:
-        self._entityName = entityName
+    def __init__(self, entity_name) -> None:
+        self._entity_name = entity_name
         self._condition = []
         """
         condicion
         array multiple cuya raiz es [field,option,value], ejemplo: [["nombre","=","unNombre"],[["apellido","=","unApellido"],["apellido","=","otroApellido","OR"]]]
         """
         
-        self._order = []
+        self._order = {}
         self._page = 1
         self._size = 100
         self._fields = []
@@ -63,13 +68,13 @@ class EntityQuery:
 
     def fields(self, fields: list):
         if not fields:
-            return self.fieldsTree()
+            return self.fields_tree()
         
         self._fields = list(set(self._fields + fields))
         return self
 
-    def fieldsTree(self):
-        self._fields = EntityQuery.container.tools(self._entityName).fieldNames()
+    def fields_tree(self):
+        self._fields = EntityQuery.container.tools(self._entity_name).fieldNames()
         return self
 
     def group(self, group: list):
@@ -80,53 +85,38 @@ class EntityQuery:
         self._having.append(having)
         return self
 
-    def entityName(self, entityName: str):
-        self._entityName = entityName
+    def entity_name(self, entity_name: str):
+        self._entity_name = entity_name
         return self
+
+    def add_prefix(self, prefix: str):
+        self._condition = add_prefix_multi_list(self._condition, prefix)
+        self._order = add_prefix_dict(self._order, prefix)
+        return self
+
+    def remove_prefix(self, prefix: str):
+        self._condition = remove_prefix_multi_list(self._condition, prefix)
+        self._order = remove_prefix_dict(self._order, prefix)
+        return self
+
+    def unique(self, params:dict):
+        """ definir condicion para campos unicos 
+        # ejemplo params
+        {"field_name":"field_value", ...}
+        
+        # campos unicos simples
+        Se definen a traves del atributo Entity._unique
+
+        # campos unicos multiples
+        Se definen a traves del atributo Entity._unique_multiple
+        """
+        unique_fields: list = EntityQuery.container.entity(self._entity_name)._unique
+        unique_fields_multiple: list = EntityQuery.container.entity(self._entity_name)._unique_multiple
 
 
     """
-  public function addPrefix($prefix){
-    $this->addPrefixRecursive($this->condition, $prefix);
-    
-    foreach($this->order as $k=>$v){
-      $this->order[$prefix.$k] = $v;
-      unset($this->order[$k]);
-    }
-    return $this;
-  }
-
-  protected function removePrefixRecursive(array &$condition, $prefix){
-    if(!key_exists(0, $condition)) return;
-    if(is_array($condition[0])) {
-      foreach($condition as &$value) $this->removePrefixRecursive($value,$prefix);  
-    } else {
-      $count = 1;
-      $condition[0] = str_replace($prefix, '', $condition[0], $count);
-    }
-    return $this;
-  }
-
-  public function removePrefix($prefix){
-    $this->removePrefixRecursive($this->condition, $prefix);
-    
-    foreach($this->order as $k=>$v){
-      $count = 1;
-      $newk = str_replace($prefix, '', $k, $count);
-      $this->order[$newk] = $v;
-      unset($this->order[$k]);
-    }
-    return $this;
-  }
 
   public function unique(array $params){
-    /**
-     * definir condicion para campos unicos
-     * $params:
-     *   array("nombre_field" => "valor_field", ...)
-     * los campos unicos simples se definen a traves del atributo Entity::$unique
-     * los campos unicos multiples se definen a traves del atributo Entity::$uniqueMultiple
-     */
     $uniqueFields = $this->container->entity($this->entityName)->unique;
     $uniqueFieldsMultiple = $this->container->entity($this->entityName)->uniqueMultiple;
 

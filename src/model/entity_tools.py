@@ -1,6 +1,6 @@
 
 
-from icontainer import IContainer
+from src.icontainer import IContainer
 
 class EntityTools:
     container: IContainer
