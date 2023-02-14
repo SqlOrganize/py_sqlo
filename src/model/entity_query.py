@@ -1,4 +1,5 @@
 
+from src.config import EQUAL
 from src.function.add_prefix_multi_list import add_prefix_multi_list
 from src.function.add_prefix_dict import add_prefix_dict
 from src.function.remove_prefix_multi_list import remove_prefix_multi_list
@@ -89,12 +90,12 @@ class EntityQuery:
         self._entity_name = entity_name
         return self
 
-    def add_prefix(self, prefix: str):
+    def _add_prefix(self, prefix: str):
         self._condition = add_prefix_multi_list(self._condition, prefix)
         self._order = add_prefix_dict(self._order, prefix)
         return self
 
-    def remove_prefix(self, prefix: str):
+    def _remove_prefix(self, prefix: str):
         self._condition = remove_prefix_multi_list(self._condition, prefix)
         self._order = remove_prefix_dict(self._order, prefix)
         return self
@@ -112,7 +113,9 @@ class EntityQuery:
         """
         unique_fields: list = EntityQuery.container.entity(self._entity_name)._unique
         unique_fields_multiple: list = EntityQuery.container.entity(self._entity_name)._unique_multiple
-
+        condition = []
+        if "id" in params and params["id"]:
+            condition.append(["id", EQUAL, params["id"]])
 
     """
 
@@ -121,7 +124,8 @@ class EntityQuery:
     $uniqueFieldsMultiple = $this->container->entity($this->entityName)->uniqueMultiple;
 
     $condition = array();
-    if(array_key_exists("id",$params) && !empty($params["id"])) array_push($condition, ["id", "=", $params["id"]]);
+    if(array_key_exists("id",$params) 
+    && !empty($params["id"])) array_push($condition, ["id", "=", $params["id"]]);
 
     foreach($uniqueFields as $field){
       foreach($params as $key => $value){
