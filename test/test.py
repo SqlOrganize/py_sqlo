@@ -28,7 +28,7 @@ query = Container.query("toma").cond([
 
 pprint(vars(query))
 
-# print(Container.tools("persona").fieldNames())
+# print(Container.tools("persona").field_names())
 # pprint(vars(Container.query("persona")))
 # pprint(vars(Container.field("persona","nombres")))
 # json_formatted_str = json.dumps(Container.entities(), indent=2)

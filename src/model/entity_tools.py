@@ -5,14 +5,14 @@ from src.icontainer import IContainer
 class EntityTools:
     container: IContainer
 
-    def __init__(self, entityName) -> None:
-        self._entityName = entityName
+    def __init__(self, entity_name) -> None:
+        self._entity_name = entity_name
 
-    def fieldNames(self):
-        "fieldNames from entityName and its relations"
-        fieldNamesR = []
-        for fieldId, config in EntityTools.container.relations(self._entityName).items():
-            fieldNamesR += [fieldId+"-"+fieldName for fieldName in EntityTools.container.fieldNames(config["entity_name"])]
+    def field_names(self):
+        "field_names from entity_name and its relations"
+        field_namesR = []
+        for fieldId, config in EntityTools.container.relations(self._entity_name).items():
+            field_namesR += [fieldId+"-"+field_name for field_name in EntityTools.container.field_names(config["entity_name"])]
 
-        return EntityTools.container.fieldNames(self._entityName) + fieldNamesR
+        return EntityTools.container.field_names(self._entity_name) + field_namesR
 

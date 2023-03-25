@@ -110,10 +110,10 @@ class Entity:
         "fields one to one (local fk)"
         return self._fields(self._oo)
 
-    def _fields(self, fieldNames):
+    def _fields(self, field_names):
         fields = []
-        for fieldName in fieldNames:
-            fields.append(Entity.container.field(self.name(), fieldName))
+        for field_name in field_names:
+            fields.append(Entity.container.field(self.name(), field_name))
         return fields
 
     def fk(self):
@@ -136,8 +136,8 @@ class Entity:
         its neccesary to iterate over all entities
         """
         fields = []
-        for entityName in Entity.container.entity_names():
-            e = Entity.container.entity(entityName)
+        for entity_name in Entity.container.entity_names():
+            e = Entity.container.entity(entity_name)
             for f in e.mo():
                 if f.entity_ref_name() == self.name():
                     fields.append(f)
@@ -151,8 +151,8 @@ class Entity:
         its neccesary to iterate over all entities
         """
         fields = []
-        for entityName in Entity.container.entity_names():
-            e = Entity.container.entity(entityName)
+        for entity_name in Entity.container.entity_names():
+            e = Entity.container.entity(entity_name)
             for f in e.oo():
                 if f.entity_ref_name() == self.name():
                     fields.append(f)

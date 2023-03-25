@@ -7,7 +7,7 @@ class Field:
 
     def __init__(self, config:dict) -> None:
         self._name = None
-        self._entityName = None
+        self._entity_name = None
         self._entityRefName = None
         self._alias = None
         self._default = None
@@ -79,14 +79,14 @@ class Field:
         """ alias. """
         return self._alias
 
-    def entityName(self):
-        return self._entityName
+    def entity_name(self):
+        return self._entity_name
 
     def entityRefName(self):
         return self._entityRefName
 
     def entity(self):
-        return Field.container.entity(self._entityName)
+        return Field.container.entity(self._entity_name)
 
     def entityRef(self):
         return Field.container.entity(self._entityRefName)

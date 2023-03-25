@@ -75,7 +75,7 @@ class EntityQuery:
         return self
 
     def fields_tree(self):
-        self._fields = EntityQuery.container.tools(self._entity_name).fieldNames()
+        self._fields = EntityQuery.container.tools(self._entity_name).field_names()
         return self
 
     def group(self, group: list):
@@ -120,8 +120,8 @@ class EntityQuery:
     """
 
   public function unique(array $params){
-    $uniqueFields = $this->container->entity($this->entityName)->unique;
-    $uniqueFieldsMultiple = $this->container->entity($this->entityName)->uniqueMultiple;
+    $uniqueFields = $this->container->entity($this->entity_name)->unique;
+    $uniqueFieldsMultiple = $this->container->entity($this->entity_name)->uniqueMultiple;
 
     $condition = array();
     if(array_key_exists("id",$params) 
@@ -292,11 +292,11 @@ class EntityQuery:
   }
 
 
-  protected function mapping($fieldName){
+  protected function mapping($field_name){
      /**
      * Interpretar prefijo y obtener mapping
      */
-    $f = $this->container->explodeField($this->entityName, $fieldName);
+    $f = $this->container->explode_field($this->entity_name, $field_name);
     $m = $this->container->mapping($f["entity_name"], $f["field_id"]);
     return [$m, $f["field_name"]];
   }
@@ -305,18 +305,18 @@ class EntityQuery:
     $fields = array_merge($this->group, $this->fields);
 
     $fieldsQuery_ = [];
-    foreach($fields as $key => $fieldName){
-      if(is_array($fieldName)){
+    foreach($fields as $key => $field_name){
+      if(is_array($field_name)){
         if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
         $map_ = [];
-        foreach($fieldName as $fn){
-          $f = $this->container->explodeField($this->entityName, $fn);
+        foreach($field_name as $fn){
+          $f = $this->container->explode_field($this->entity_name, $fn);
           $m = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
           array_push($map_, $m);
         } 
         $f = "CONCAT_WS(', ', " . implode(",",$map_) . ") AS " . $key;
       } else {
-        $f = $this->container->explodeField($this->entityName, $fieldName);
+        $f = $this->container->explode_field($this->entity_name, $field_name);
         $map = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
         $prefix = (!empty($f["field_id"])) ? $f["field_id"] . "-" : "";
         $alias = (is_integer($key)) ? $prefix . $f["field_name"] : $key;
@@ -332,12 +332,12 @@ class EntityQuery:
 
   protected function groupBy(){
     $group_ = [];
-    foreach($this->group as $key => $fieldName){
-      if(is_array($fieldName)){
+    foreach($this->group as $key => $field_name){
+      if(is_array($field_name)){
         if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
         $f = $key;
       } else {
-        $f = $this->container->explodeField($this->entityName, $fieldName);
+        $f = $this->container->explode_field($this->entity_name, $field_name);
         $map = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
       }
       array_push($group_, $map);
@@ -349,13 +349,13 @@ class EntityQuery:
 
   protected function join(){
     $sql = "";
-    $tree = $this->container->tree($this->entityName);
+    $tree = $this->container->tree($this->entity_name);
     $this->joinFk($tree, "", $sql);
     return $sql;
   }
 
   protected function joinFk(array $tree, $tablePrefix, &$sql){
-    if (empty ($tablePrefix)) $tablePrefix = $this->container->entity($this->entityName)->getAlias();
+    if (empty ($tablePrefix)) $tablePrefix = $this->container->entity($this->entity_name)->getAlias();
 
     foreach ($tree as $prefix => $value) {      
       $entitySn =  $this->container->entity($value["entity_name"])->sn_();
@@ -377,9 +377,9 @@ class EntityQuery:
   protected function from(){    
     return " FROM 
 
-" . $this->container->entity($this->entityName)->sn_() . "
+" . $this->container->entity($this->entity_name)->sn_() . "
 
- AS {$this->container->entity($this->entityName)->getAlias()}
+ AS {$this->container->entity($this->entity_name)->getAlias()}
 ";
   }
 
@@ -459,7 +459,7 @@ class EntityQuery:
   protected function conditionFieldCheckValue($field, $option, $value){    
     if(!is_array($value)) {
       $condition = $this->conditionField($field, $option, $value);
-      if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$this->entityName}.{$field}");
+      if(!$condition) throw new Exception("No pudo definirse el SQL de la condicion del campo: {$this->entity_name}.{$field}");
       return $condition;
     }
 
@@ -486,10 +486,10 @@ class EntityQuery:
    * Traducir campo y definir SQL con la opcion
    */
   protected function conditionField($field, $option, $value){
-    $f = $this->container->explodeField($this->entityName, $field);
+    $f = $this->container->explode_field($this->entity_name, $field);
 
     if(strpos($value, FF) === 0) { //definir condicion entre fields
-      $v = $this->container->explodeField($this->entityName, substr($value, strlen(FF)));
+      $v = $this->container->explode_field($this->entity_name, substr($value, strlen(FF)));
       $fieldSql1 = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
       $fieldSql2 = $this->container->mapping($v["entity_name"], $v["field_id"])->_($v["field_name"]);
       
@@ -505,7 +505,7 @@ class EntityQuery:
      * Debido a la complejidad del metodo "condition" se proporciona un ejemplo para entender su comportamiento: 
      * Desde la entidad alumno, Se quiere traducir "persona-numero_documento.max"
      * Se define una instancia de condition con los siguientes atributos: 
-     *    entityName = "persona"
+     *    entity_name = "persona"
      *    prefix = "persona-"
      * 
      * Desde condition se ejecuta
@@ -524,7 +524,7 @@ class EntityQuery:
    * Procesar atributo order y definir ordenamiento
    */
   protected function _order(){
-    $entity = $this->container->entity($this->entityName);
+    $entity = $this->container->entity($this->entity_name);
     $orderDefault = (!empty($entity->getOrderDefault())) ? $entity->getOrderDefault() : array_fill_keys($entity->main, "asc"); //se retorna ordenamiento por defecto considerando campos principales nf de la entidad principal
 
     foreach($this->order as $key => $value) {
@@ -536,7 +536,7 @@ class EntityQuery:
     $sql = '';
     foreach($order as $key => $value){
       $value = ((strtolower($value) == "asc") || ($value === true)) ? "asc" : "desc";
-      $f = $this->container->explodeField($this->entityName, $key);
+      $f = $this->container->explode_field($this->entity_name, $key);
       $map_ = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
       $sql_ = "{$map_} IS NULL, {$map_} {$value}";
       $sql .= concat($sql_, ', ', ' ORDER BY', $sql);

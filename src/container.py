@@ -125,66 +125,66 @@ class Container(IContainer):
         return cls._entitiesConfig
 
     @classmethod
-    def fields_config(cls, entityName) -> dict:
-        if entityName not in cls._fieldsConfig:
-            with open(cls.config["path_model"]+"fields/_"+entityName+".json", 'r', encoding='utf-8') as file:
-                cls._fieldsConfig[entityName] = json.load(file)
+    def fields_config(cls, entity_name) -> dict:
+        if entity_name not in cls._fieldsConfig:
+            with open(cls.config["path_model"]+"fields/_"+entity_name+".json", 'r', encoding='utf-8') as file:
+                cls._fieldsConfig[entity_name] = json.load(file)
 
-            if exists(cls.config["path_model"]+"fields/"+entityName+".json"):
-                with open(cls.config["path_model"]+"fields/"+entityName+".json", 'r', encoding='utf-8') as file:
+            if exists(cls.config["path_model"]+"fields/"+entity_name+".json"):
+                with open(cls.config["path_model"]+"fields/"+entity_name+".json", 'r', encoding='utf-8') as file:
                     e2 = json.load(file)
 
-                    for k, v in cls._fieldsConfig[entityName].items():
+                    for k, v in cls._fieldsConfig[entity_name].items():
                         if k in e2:
-                            cls._fieldsConfig[entityName][k].update(e2[k])
+                            cls._fieldsConfig[entity_name][k].update(e2[k])
 
                     for k, v in e2.items():
-                        if k not in cls._fieldsConfig[entityName]:
-                            cls._fieldsConfig[entityName][k] = e2[k]
+                        if k not in cls._fieldsConfig[entity_name]:
+                            cls._fieldsConfig[entity_name][k] = e2[k]
 
-        return cls._fieldsConfig[entityName] 
+        return cls._fieldsConfig[entity_name] 
         
     @classmethod
-    def tree(cls, entityName) -> dict:
-        return cls._tree[entityName]
+    def tree(cls, entity_name) -> dict:
+        return cls._tree[entity_name]
 
     @classmethod
-    def relations(cls, entityName) -> dict:
-        return cls._relations[entityName]       
+    def relations(cls, entity_name) -> dict:
+        return cls._relations[entity_name]       
     
     @classmethod
     def entity_names(cls) -> list:
         return list(cls.tree().keys())
 
     @classmethod
-    def field_names(cls, entityName) -> list:
-        return list(cls.fields_config(entityName).keys())
+    def field_names(cls, entity_name) -> list:
+        return list(cls.fields_config(entity_name).keys())
     
     @classmethod
-    def entity(cls, entityName) -> Entity:
-        if entityName not in cls._entity:
-            cls._entity[entityName] = Entity(cls._entitiesConfig[entityName])
+    def entity(cls, entity_name) -> Entity:
+        if entity_name not in cls._entity:
+            cls._entity[entity_name] = Entity(cls._entitiesConfig[entity_name])
 
-        return cls._entity[entityName]
-
-    @classmethod
-    def field(cls, entityName, fieldName) -> Field:
-        if entityName not in cls._field:
-            cls._field[entityName] = dict()
-
-        if fieldName not in cls._field[entityName]:
-            cfg = cls.fields_config(entityName)[fieldName]
-            cls._field[entityName][fieldName] = Field(cfg)
-
-        return cls._field[entityName][fieldName]
+        return cls._entity[entity_name]
 
     @classmethod
-    def query(cls, entityName) -> EntityQuery:
-        return EntityQuery(entityName)
+    def field(cls, entity_name, field_name) -> Field:
+        if entity_name not in cls._field:
+            cls._field[entity_name] = dict()
+
+        if field_name not in cls._field[entity_name]:
+            cfg = cls.fields_config(entity_name)[field_name]
+            cls._field[entity_name][field_name] = Field(cfg)
+
+        return cls._field[entity_name][field_name]
 
     @classmethod
-    def tools(cls, entityName) -> EntityTools:
-        if entityName not in cls._tools:
-            cls._tools[entityName] = EntityTools(entityName)
+    def query(cls, entity_name) -> EntityQuery:
+        return EntityQuery(entity_name)
 
-        return cls._tools[entityName]
+    @classmethod
+    def tools(cls, entity_name) -> EntityTools:
+        if entity_name not in cls._tools:
+            cls._tools[entity_name] = EntityTools(entity_name)
+
+        return cls._tools[entity_name]

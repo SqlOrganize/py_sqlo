@@ -20,12 +20,12 @@ class IContainer:
 
     @classmethod
     @abstractmethod
-    def tree(cls, entityName = None) -> dict:
+    def tree(cls, entity_name = None) -> dict:
         pass
 
     @classmethod
     @abstractmethod
-    def relations(cls, entityName = None) -> dict:
+    def relations(cls, entity_name = None) -> dict:
         pass
 
     @classmethod
@@ -40,30 +40,30 @@ class IContainer:
     
     @classmethod
     @abstractmethod
-    def entity(cls, entityName = None):
+    def entity(cls, entity_name = None):
         pass
 
     @classmethod
     @abstractmethod
-    def field(cls, entityName, fieldName = None):
+    def field(cls, entity_name, field_name = None):
         pass
 
     @classmethod
     @abstractmethod
-    def tools(cls, entityName):
+    def tools(cls, entity_name):
         pass
 
     @classmethod
     @abstractmethod
-    def entity_query(cls, entityName):
+    def entity_query(cls, entity_name):
         pass
 
     @classmethod
     @abstractmethod
-    def field_names(cls, entityName) -> list:
+    def field_names(cls, entity_name) -> list:
         pass 
 
     @classmethod
     @abstractmethod
-    def fields_config(cls, entityName) -> dict:
+    def fields_config(cls, entity_name) -> dict:
         pass 
