@@ -1,5 +1,5 @@
 
-from src.config import EQUAL
+from src.config import AND_, EQUAL, OR_
 from src.function.add_prefix_multi_list import add_prefix_multi_list
 from src.function.add_prefix_dict import add_prefix_dict
 from src.function.remove_prefix_multi_list import remove_prefix_multi_list
@@ -111,61 +111,59 @@ class EntityQuery:
         # campos unicos multiples
         Se definen a traves del atributo Entity._unique_multiple
         """
-        unique_fields: list = EntityQuery.container.entity(self._entity_name)._unique
-        unique_fields_multiple: list = EntityQuery.container.entity(self._entity_name)._unique_multiple
-        condition = []
-        if "id" in params and params["id"]:
-            condition.append(["id", EQUAL, params["id"]])
-
-    """
-
-  public function unique(array $params){
-    $uniqueFields = $this->container->entity($this->entity_name)->unique;
-    $uniqueFieldsMultiple = $this->container->entity($this->entity_name)->uniqueMultiple;
-
-    $condition = array();
-    if(array_key_exists("id",$params) 
-    && !empty($params["id"])) array_push($condition, ["id", "=", $params["id"]]);
-
-    foreach($uniqueFields as $field){
-      foreach($params as $key => $value){
-        if(($key == $field) && !empty($value)) {
-          array_push($condition, [$key, "=", $value, "or"]);
-        }
-      }
-    }
-
-    if($uniqueFieldsMultiple) {
-      $conditionMultiple = [];
-      $first = true;
-      $existsConditionMultiple = true; //si algun campo de la condicion multiple no se encuentra definido,  se carga en true.
-      foreach($uniqueFieldsMultiple as $field){
-        if(!$existsConditionMultiple) break;
-        $existsConditionMultiple = false;
+        unique_fields: list = EntityQuery.container.entity(self._entity_name).unique()
+        unique_fields_multiple: list = EntityQuery.container.entity(self._entity_name).unique_multiple()
         
-        foreach($params as $key => $value){
-          if($key == $field) {
-            $existsConditionMultiple = true;
-            if($first) {
-              $con = "or";
-              $first = false;
-            } else {
-              $con = "and";
-            }
-            array_push($conditionMultiple, [$key, "=", $value, $con]);
-          }
-        }
-      }
+        condition = []
+        # if "id" in params and params["id"]:
+        #     condition.append(["id", EQUAL, params["id"]])
 
-      if($existsConditionMultiple && !empty($conditionMultiple)) array_push($condition, $conditionMultiple);
-    }
+        first = True 
+        
+        for f in unique_fields:
+            for k, v in params.items():
+                if k == f and v:
+                    if first and condition:
+                        con = OR_
+                        first = False
+                    else:
+                        con = AND_    
 
-    if(empty($condition)) throw new Exception("Error al definir condicion unica");
+                    condition.append([k, EQUAL, v, con])
+        
+        if unique_fields_multiple:
+            condition_multiple = []
+            first = True 
+            exists_condition_multiple = True #si algun campo de la condicion multiple no se encuentra definido, se carga en True.
+            for f in unique_fields_multiple:
+                print(f)
+                if not exists_condition_multiple:
+                    break
 
-    $this->cond($condition);
-    return $this;
-  }
+                exists_condition_multiple = False
 
+                for k, v in params.items():
+                    if k == f:
+                        exists_condition_multiple = True
+                        if first and condition:
+                            con = OR_
+                            first = False
+                        else:
+                            con = AND_    
+
+                        condition_multiple.append([k, EQUAL, v, con])
+
+            if exists_condition_multiple and condition_multiple:
+                condition.append(condition_multiple)
+
+        if not condition:
+            raise "Error al definir condition unica"
+
+        self.cond(condition)
+
+        return self
+
+        """
 
   /**
      * Retorna la columna indicada en el parametro

@@ -16,15 +16,11 @@ config = {
 Container.init(config)
 
 e = Container.entity("sede")
-pprint(vars(e))
+# pprint(e.unique_multiple())
+# pprint(vars(e))
 
-query = Container.query("toma").cond([
-    [
-        ["cond1", EQUAL, "value1"],
-        ["cond2", EQUAL, "value2"],
-    ],
-    ["cond3", APPROX, "value3"],
-]).order({"cond1":"ASC", "cond2":"DESC"}).add_prefix("pre-")
+
+query = Container.query("sede").unique({"ids":"AD", "numero":50,"centro_educativos":"FF"})
 
 pprint(vars(query))
 

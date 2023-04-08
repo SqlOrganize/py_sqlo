@@ -1,6 +1,8 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
-class IContainer:
+from src.model.ientity import IEntity
+
+class IContainer(ABC):
     """ Container interface.
     """
     @classmethod
@@ -40,7 +42,7 @@ class IContainer:
     
     @classmethod
     @abstractmethod
-    def entity(cls, entity_name = None):
+    def entity(cls, entity_name = None) -> IEntity:
         pass
 
     @classmethod

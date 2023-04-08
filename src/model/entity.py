@@ -1,8 +1,9 @@
 
 
 from src.icontainer import IContainer
+from src.model.ientity import IEntity
 
-class Entity:
+class Entity(IEntity):
     container: IContainer
 
     def __init__(self, config:dict) -> None:
@@ -41,12 +42,14 @@ class Entity:
         self._unique = ["id"]
         """
         Valores unicos
+        Una entidad puede tener varios campos que determinen un valor unico
         @example ["field1","field2",...]
         """
     
         self._unique_multiple = []
         """
         Valores unicos
+        Una entidad puede tener un y solo un conjunto de campos unique_multiple
         @example ["field1","field2",...]
         """
         for k,v in config.items():
@@ -168,7 +171,13 @@ class Entity:
     def field_names(self):
         return Entity.container.field_names(self.name())
 
-    
+    def unique(self) -> list:
+        return self._unique
+
+    def unique_multiple(self) -> list:
+        return self._unique_multiple
+
+
     
 
 
