@@ -6,7 +6,6 @@ from src.function.remove_prefix_multi_list import remove_prefix_multi_list
 from src.function.remove_prefix_dict import remove_prefix_dict
 
 from src.icontainer import IContainer
-from src.model.entity import Entity
 
 class EntityQuery:
     container: IContainer
@@ -30,8 +29,19 @@ class EntityQuery:
         - indica que pertenece a una relacion
         Ej ["nombres", "horas_catedra.sum", "edad.avg", "com_cur-horas_catedra]
         """
-
+        self._fields_concat = {}
+        """
+        Similar a _fields pero se define un alias para concatenar un conjunto de fields
+        Ej ["nombre" => ["nombres", "apellidos"], "max" => ["horas_catedra.max", "edad.max"]]
+        """
         self._group = []      
+        """
+        Similar a fields pero campo de agrupamiento
+        """
+        self._group_concat = {}      
+        """
+        Similar a _fields_concat pero campo de agrupamiento
+        """
         self._having = []
         """
         condicion de agrupamiento
@@ -67,19 +77,27 @@ class EntityQuery:
         self._fields.append(field)
         return self
 
-    def fields(self, fields: list):
+    def fields(self, fields: list[str]) -> EntityQuery:
         if not fields:
             return self.fields_tree()
         
         self._fields = list(set(self._fields + fields))
         return self
 
-    def fields_tree(self):
+    def fields_tree(self) -> EntityQuery:
         self._fields = EntityQuery.container.tools(self._entity_name).field_names()
         return self
 
-    def group(self, group: list):
+    def fields_concat(self, fields: dict[list[str]]) -> EntityQuery:
+        self._fields_concat.update(fields)
+        return self
+
+    def group(self, group: list[str]) -> EntityQuery:
         self._group = list(set(self._group + group))
+        return self
+
+    def group_concat(self, group: dict[list[str]]) -> EntityQuery:
+        self._group_concat.update(group)
         return self
 
     def having(self, having: list):
@@ -163,14 +181,76 @@ class EntityQuery:
 
         return self
 
+    def _sql_fields(self) -> str:
         """
+        SQL FIELDS
+        """
+        ff = list(set(self._group + self._fields))
+        sql_f = []
 
-  /**
-     * Retorna la columna indicada en el parametro
-     * @example $render->fields(["id","nombres"])->column();
-     * @example $render->fields(["_count"])->column();
-     */
-  public function column($number = 0){
+        for k,v
+
+
+
+    $fieldsQuery_ = [];
+    foreach($fields as $key => $field_name){
+      if(is_array($field_name)){
+        if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
+        $map_ = [];
+        foreach($field_name as $fn){
+          $f = $this->container->explode_field($this->entity_name, $fn);
+          $m = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
+          array_push($map_, $m);
+        } 
+        $f = "CONCAT_WS(', ', " . implode(",",$map_) . ") AS " . $key;
+      } else {
+        $f = $this->container->explode_field($this->entity_name, $field_name);
+        $map = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
+        $prefix = (!empty($f["field_id"])) ? $f["field_id"] . "-" : "";
+        $alias = (is_integer($key)) ? $prefix . $f["field_name"] : $key;
+        $f = $map . " AS \"" . $alias . "\"";
+      }
+      array_push($fieldsQuery_, $f);
+    }
+
+    return implode(', 
+', $fieldsQuery_);
+  }
+
+
+
+    def sql() -> str:
+        """
+        Definir SQL
+        """
+        
+        
+        """
+    $fieldsQuery = $this->fieldsQuery();
+    $group = $this->groupBy();
+    $having = $this->condition($this->having);    
+    $condition = $this->condition($this->condition);
+    $order = $this->_order();
+    $sql = "SELECT DISTINCT
+{$fieldsQuery}
+{$this->from()}
+{$this->join()}
+" . concat($condition, 'WHERE ') . "
+{$group}
+" . concat($having, 'HAVING ') . "
+{$order}
+{$this->limit($this->page, $this->size)}
+";
+
+    return $sql;
+  }
+
+    def column(number: int = 0) -> list[str]:
+        """
+        Retornar columna indicada en parametro
+        @example container.query("entity").field("_count").column()
+        """
+        """
     $sql = $this->sql();
     $result = $this->container->db()->query($sql);
     $response = $this->container->db()->fetch_all_columns($result, $number);
@@ -266,28 +346,6 @@ class EntityQuery:
     else return null;
   }
 
-  /**
-   * Definir SQL
-   */
-  public function sql() {
-    $fieldsQuery = $this->fieldsQuery();
-    $group = $this->groupBy();
-    $having = $this->condition($this->having);    
-    $condition = $this->condition($this->condition);
-    $order = $this->_order();
-    $sql = "SELECT DISTINCT
-{$fieldsQuery}
-{$this->from()}
-{$this->join()}
-" . concat($condition, 'WHERE ') . "
-{$group}
-" . concat($having, 'HAVING ') . "
-{$order}
-{$this->limit($this->page, $this->size)}
-";
-
-    return $sql;
-  }
 
 
   protected function mapping($field_name){
@@ -299,35 +357,7 @@ class EntityQuery:
     return [$m, $f["field_name"]];
   }
 
-  protected function fieldsQuery(){
-    $fields = array_merge($this->group, $this->fields);
-
-    $fieldsQuery_ = [];
-    foreach($fields as $key => $field_name){
-      if(is_array($field_name)){
-        if(is_integer($key)) throw new Exception("Debe definirse un alias para la concatenacion (key must be string)");
-        $map_ = [];
-        foreach($field_name as $fn){
-          $f = $this->container->explode_field($this->entity_name, $fn);
-          $m = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
-          array_push($map_, $m);
-        } 
-        $f = "CONCAT_WS(', ', " . implode(",",$map_) . ") AS " . $key;
-      } else {
-        $f = $this->container->explode_field($this->entity_name, $field_name);
-        $map = $this->container->mapping($f["entity_name"], $f["field_id"])->_($f["field_name"]);
-        $prefix = (!empty($f["field_id"])) ? $f["field_id"] . "-" : "";
-        $alias = (is_integer($key)) ? $prefix . $f["field_name"] : $key;
-        $f = $map . " AS \"" . $alias . "\"";
-      }
-      array_push($fieldsQuery_, $f);
-    }
-
-    return implode(', 
-', $fieldsQuery_);
-  }
-
-
+  
   protected function groupBy(){
     $group_ = [];
     foreach($this->group as $key => $field_name){
