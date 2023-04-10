@@ -1,5 +1,5 @@
+from src.config import UNDEFINED
 from src.icontainer import IContainer
-
 
 class EntityOptions:
     container: IContainer
@@ -31,3 +31,33 @@ class EntityOptions:
         """
         return self.call_fields(EntityOptions.container.field_names(self._entity_name), method)
     
+    def to_fields(self, field_names: list[str], method:str) -> dict: 
+        """ Ejecutar metodo y almacenar resultado en n array de fields
+        """
+        row = {}
+        for field_name in field_names:
+            r = getattr(self, method)(field_name)
+            if r != UNDEFINED:
+                row[field_name] = r
+
+        return row
+    
+    def to_(self, method:str) -> dict: 
+        return self.to_fields(EntityOptions.container.field_names(self._entity_name), method)
+
+
+    def from_fields(self, row: dict, field_names: list[str], method:str) -> list: 
+        """ Ejecutar metodo y almacenar resultado en n array de fields
+        """
+        if row:
+            for field_name in field_names:
+                if self.pf()+field_name in row:
+                    getattr(self, method)(field_name, row[self.pf()+field_name])
+
+        return self
+        
+    
+    def from_(self, row: dict, method:str) -> list: 
+        return self.from_fields(row, EntityOptions.container.field_names(self._entity_name), method)
+
+

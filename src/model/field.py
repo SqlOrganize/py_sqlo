@@ -1,14 +1,15 @@
 
 
 from src.icontainer import IContainer
+from src.model.ifield import IField
 
-class Field:
+class Field(IField):
     container: IContainer
 
     def __init__(self, config:dict) -> None:
         self._name = None
         self._entity_name = None
-        self._entityRefName = None
+        self._entity_ref_name = None
         self._alias = None
         self._default = None
         """ puede ser false para booleanos """
@@ -62,33 +63,29 @@ class Field:
                 config[k] = diff
 
             setattr(self, "_"+k, config[k])
-
-    def n_(self):
-        """ name """
-        return self._name
     
     def name(self):
         """ name """
         return self._name
-
-    def a_(self):  
-        """ alias. """
-        return self._alias
         
     def alias(self):  
-        """ alias. """
+        """ alias """
         return self._alias
 
     def entity_name(self):
         return self._entity_name
 
-    def entityRefName(self):
-        return self._entityRefName
+    def entity_ref_name(self):
+        return self._entity_ref_name
 
     def entity(self):
         return Field.container.entity(self._entity_name)
 
-    def entityRef(self):
-        return Field.container.entity(self._entityRefName)
+    def entity_ref(self):
+        return Field.container.entity(self._entity_ref_name)
+    
+    def is_main(self):
+        return True if self.name() in Field.container.entity(self._entity_name).main() else False
+
 
 

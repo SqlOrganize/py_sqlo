@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod
 
+from src.model.field import Field
+
 class IEntity(ABC):
     """ 
     Entity interface.
-    Se define para evitar "circular dependencies" 
+    Utilizada solamente en IContainer y como superclase de Entity
     """
     @abstractmethod
-    def n_(self):
+    def name(self) -> str:
         pass
 
     @abstractmethod
@@ -19,4 +21,16 @@ class IEntity(ABC):
 
     @abstractmethod
     def alias(self) -> str:
+        pass
+
+    @abstractmethod
+    def identifier(self) -> list[str]:
+        pass
+
+    @abstractmethod
+    def nf(self) -> list[Field]:
+        pass
+
+    @abstractmethod
+    def main(self) -> list[str]:
         pass

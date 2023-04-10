@@ -145,7 +145,7 @@ class Container(IContainer):
         return cls._fieldsConfig[entity_name] 
         
     @classmethod
-    def tree(cls, entity_name) -> dict:
+    def tree(cls, entity_name: str) -> dict:
         return cls._tree[entity_name]
 
     @classmethod
@@ -154,7 +154,7 @@ class Container(IContainer):
     
     @classmethod
     def entity_names(cls) -> list:
-        return list(cls.tree().keys())
+        return list(cls._tree.keys())
 
     @classmethod
     def field_names(cls, entity_name) -> list:
@@ -205,3 +205,7 @@ class Container(IContainer):
                 "entity_name": entity_name,
                 "field_name": field_name
             }
+        
+    def field_by_id(cls, entity_name:str, field_id:str) -> Field:
+        r = cls.relations(entity_name)
+        return cls.field(entity_name, r[field_id]["field_name"])

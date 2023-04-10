@@ -1,9 +1,13 @@
 from abc import ABC, abstractmethod
 
 from src.model.ientity import IEntity
+from src.model.ifield import IField
 
 class IContainer(ABC):
     """ Container interface.
+    Para evitar redundancia ciclica
+        IContainer se utiliza en el conjunto de clases: Entity, Field, etc.
+        IContainer solamente utiliza IField, IEntity
     """
     @classmethod
     @abstractmethod
@@ -22,7 +26,7 @@ class IContainer(ABC):
 
     @classmethod
     @abstractmethod
-    def tree(cls, entity_name = None) -> dict:
+    def tree(cls, entity_name: str) -> dict:
         pass
 
     @classmethod
@@ -74,3 +78,8 @@ class IContainer(ABC):
     @abstractmethod
     def explode_field(cls, entity_name:str, field_name:str) -> dict:
         pass 
+
+    @classmethod
+    @abstractmethod
+    def field_by_id(cls, entity_name:str, field_id:str) -> IField:
+        pass
