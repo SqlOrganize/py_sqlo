@@ -42,7 +42,7 @@ class IContainer(ABC):
     
     @classmethod
     @abstractmethod
-    def entity(cls, entity_name = None) -> IEntity:
+    def entity(cls, entity_name:str) -> IEntity:
         pass
 
     @classmethod
@@ -68,4 +68,9 @@ class IContainer(ABC):
     @classmethod
     @abstractmethod
     def fields_config(cls, entity_name) -> dict:
+        pass 
+
+    @classmethod
+    @abstractmethod
+    def explode_field(cls, entity_name:str, field_name:str) -> dict:
         pass 

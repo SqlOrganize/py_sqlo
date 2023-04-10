@@ -161,7 +161,7 @@ class Container(IContainer):
         return list(cls.fields_config(entity_name).keys())
     
     @classmethod
-    def entity(cls, entity_name) -> Entity:
+    def entity(cls, entity_name:str) -> Entity:
         if entity_name not in cls._entity:
             cls._entity[entity_name] = Entity(cls._entitiesConfig[entity_name])
 
@@ -188,3 +188,20 @@ class Container(IContainer):
             cls._tools[entity_name] = EntityTools(entity_name)
 
         return cls._tools[entity_name]
+    
+    @classmethod
+    def explode_field(cls, entity_name:str, field_name:str) -> dict:
+        f = field_name.split(' ') 
+
+        if(len(f) == 2):
+            return {
+                "field_id": f[0],    
+                "entity_name": cls.relations(entity_name)[f[0]]["entity_name"],
+                "field_name": f[1]
+            }
+        else:
+            return {
+                "field_id": "",
+                "entity_name": entity_name,
+                "field_name": field_name
+            }

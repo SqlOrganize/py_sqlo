@@ -81,14 +81,14 @@ class Entity(IEntity):
         """ schema.name AS alias """
         return self.sn_() + " AS " + self._alias
 
-    def a_(self):  
+    def a_(self) -> str:  
         """ alias. """
         return self._alias
 
-    def name(self):
+    def name(self) -> str:
         return self._name
 
-    def alias(self):
+    def alias(self) -> str:
         return self._alias
     
     def schema(self):

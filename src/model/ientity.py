@@ -16,3 +16,7 @@ class IEntity(ABC):
     @abstractmethod
     def unique_multiple(self) -> list:
         pass
+
+    @abstractmethod
+    def alias(self) -> str:
+        pass

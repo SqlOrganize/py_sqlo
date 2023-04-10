@@ -77,26 +77,26 @@ class EntityQuery:
         self._fields.append(field)
         return self
 
-    def fields(self, fields: list[str]) -> EntityQuery:
+    def fields(self, fields: list[str]):
         if not fields:
             return self.fields_tree()
         
         self._fields = list(set(self._fields + fields))
         return self
 
-    def fields_tree(self) -> EntityQuery:
+    def fields_tree(self):
         self._fields = EntityQuery.container.tools(self._entity_name).field_names()
         return self
 
-    def fields_concat(self, fields: dict[list[str]]) -> EntityQuery:
+    def fields_concat(self, fields: dict[list[str]]):
         self._fields_concat.update(fields)
         return self
 
-    def group(self, group: list[str]) -> EntityQuery:
+    def group(self, group: list[str]):
         self._group = list(set(self._group + group))
         return self
 
-    def group_concat(self, group: dict[list[str]]) -> EntityQuery:
+    def group_concat(self, group: dict[list[str]]):
         self._group_concat.update(group)
         return self
 
@@ -141,11 +141,11 @@ class EntityQuery:
         for f in unique_fields:
             for k, v in params.items():
                 if k == f and v:
-                    if first and condition:
-                        con = OR_
+                    if first:
+                        con = AND_
                         first = False
                     else:
-                        con = AND_    
+                        con = OR_    
 
                     condition.append([k, EQUAL, v, con])
         
@@ -154,7 +154,6 @@ class EntityQuery:
             first = True 
             exists_condition_multiple = True #si algun campo de la condicion multiple no se encuentra definido, se carga en True.
             for f in unique_fields_multiple:
-                print(f)
                 if not exists_condition_multiple:
                     break
 
@@ -185,10 +184,17 @@ class EntityQuery:
         """
         SQL FIELDS
         """
-        ff = list(set(self._group + self._fields))
-        sql_f = []
+        field_names = list(set(self._group + self._fields))
+        sql_fields = []
 
-        for k,v
+        for field_name in field_names:
+            ff = EntityQuery.container.explode_field(self.entity_name, field_name)
+            map = EntityQuery.container.mapping(ff["entity_name"], ff["field_id"]).map(ff["field_name"])
+            $prefix = (!empty($f["field_id"])) ? $f["field_id"] . "-" : "";
+            $alias = (is_integer($key)) ? $prefix . $f["field_name"] : $key;
+            $f = $map . " AS \"" . $alias . "\"";
+
+            
 
 
 
