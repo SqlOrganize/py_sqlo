@@ -29,7 +29,6 @@ class MappingEntityOptions(EntityOptions):
         return 'CONCAT_WS("'+UNDEFINED+'",'+','.join(identifier)+''')
 '''
 
-
     def label(self):
         fields_label = []
 
@@ -43,7 +42,18 @@ class MappingEntityOptions(EntityOptions):
 
         for field_id, subtree in tree:
             if MappingEntityOptions.container.field_by_id(self._entity_name, field_id).isMain():
-                pass #@TODO FALTA PASAR!!!
+                self._recursive_label(field_id, subtree, fields_label)
+
+        fields_label_ = []
+
+        for l in fields_label:
+            def res(f):
+                f = MappingEntityOptions.container.explode_field(self._entity_name, f)
+                return MappingEntityOptions.container.mapping(f["entity_name"], f["field_id"]).map(f["field_name"])
+            fields_label_.append(res(l))
+
+        return fields_label_
+
 
     def _recursive_label(self, key: str, tree: dict, fields_label: list):
         e = MappingEntityOptions.container.entity(self._entity_name)
@@ -55,5 +65,3 @@ class MappingEntityOptions(EntityOptions):
         for field_id, subtree in tree["children"]:
             if MappingEntityOptions.container.field_by_id(e.name()).is_main():
                 self._recursive_label(field_id, subtree, fields_label)
-
-        pass #@TODO FALTA PASAR!!!
