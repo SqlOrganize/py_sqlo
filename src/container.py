@@ -1,10 +1,13 @@
+import importlib
 import mysql.connector
 from mysql.connector.connection import MySQLConnection
 import json
 from os.path import exists
+from src.function.snake_case_to_camel_case import snake_case_to_camel_case
 from src.icontainer import IContainer
 
 from src.model.entity import Entity
+from src.model.entity_options.mapping import MappingEntityOptions
 from src.model.entity_query import EntityQuery
 from src.model.entity_tools import EntityTools
 from src.model.field import Field
@@ -45,6 +48,9 @@ class Container(IContainer):
     _field:dict = dict()
     "instances of Field"
 
+    _mapping:dict = dict()
+    "instances of MappingEntityOptions"
+    
     @classmethod
     def _init_tree(cls):
         if not cls._tree:
@@ -206,6 +212,28 @@ class Container(IContainer):
                 "field_name": field_name
             }
         
+    @classmethod
     def field_by_id(cls, entity_name:str, field_id:str) -> Field:
         r = cls.relations(entity_name)
         return cls.field(entity_name, r[field_id]["field_name"])
+
+    @classmethod
+    def mapping(cls, entity_name: str, prefix: str = ""):
+        if entity_name in cls._mapping:
+            return cls._mapping[entity_name]
+
+        try:
+            importlib.import_module("model.mapping."+entity_name)
+            MappingEntityOptions_ = getattr("model.mapping."+entity_name, snake_case_to_camel_case(entity_name)+"MappingEntityOptions")
+            cls._mapping[entity_name] = MappingEntityOptions_(entity_name, prefix)
+
+        except ModuleNotFoundError:
+            cls._mapping[entity_name] = MappingEntityOptions(entity_name, prefix)
+
+    
+    $c = new $class_name;
+    if($prefix) $c->prefix = $prefix;
+    $c->entity_name = $entity_name;
+    $c->container = $this;
+    return $c;    
+  
