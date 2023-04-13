@@ -223,17 +223,12 @@ class Container(IContainer):
             return cls._mapping[entity_name]
 
         try:
-            importlib.import_module("model.mapping."+entity_name)
-            MappingEntityOptions_ = getattr("model.mapping."+entity_name, snake_case_to_camel_case(entity_name)+"MappingEntityOptions")
+            importlib.import_module("src.model.mapping."+entity_name)
+            MappingEntityOptions_ = getattr("src.model.mapping."+entity_name, snake_case_to_camel_case(entity_name)+"MappingEntityOptions")
             cls._mapping[entity_name] = MappingEntityOptions_(entity_name, prefix)
 
         except ModuleNotFoundError:
-            cls._mapping[entity_name] = MappingEntityOptions(entity_name, prefix)
-
-    
-    $c = new $class_name;
-    if($prefix) $c->prefix = $prefix;
-    $c->entity_name = $entity_name;
-    $c->container = $this;
-    return $c;    
-  
+            print("Module not found")
+            # cls._mapping[entity_name] = MappingEntityOptions(entity_name, prefix)
+        
+        return cls._mapping[entity_name]
