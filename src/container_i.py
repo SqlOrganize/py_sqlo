@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
+from .entity_options.entity_options_i import EntityOptionsI
+from .entity_tools_i import EntityToolsI
+from .entity_i import EntityI
+from .field_i import FieldI
 
-from src.model.ientity import IEntity
-from src.model.ifield import IField
-
-class IContainer(ABC):
+class ContainerI(ABC):
     """ Container interface.
     Para evitar redundancia ciclica
-        IContainer se utiliza en el conjunto de clases: Entity, Field, etc.
-        IContainer solamente utiliza IField, IEntity
+    ContainerI se utiliza en el conjunto de clases: Entity, Field, etc.
+    ContainerI solamente utiliza FieldI, EntityI, etc.
     """
     @classmethod
     @abstractmethod
@@ -46,7 +47,7 @@ class IContainer(ABC):
     
     @classmethod
     @abstractmethod
-    def entity(cls, entity_name:str) -> IEntity:
+    def entity(cls, entity_name:str) -> EntityI:
         pass
 
     @classmethod
@@ -81,5 +82,15 @@ class IContainer(ABC):
 
     @classmethod
     @abstractmethod
-    def field_by_id(cls, entity_name:str, field_id:str) -> IField:
+    def field_by_id(cls, entity_name:str, field_id:str) -> FieldI:
+        pass
+
+    @classmethod
+    @abstractmethod
+    def mapping(cls, entity_name:str, field_id:str) -> EntityOptionsI:
+        pass
+
+    @classmethod
+    @abstractmethod
+    def tools(cls, entity_name) -> EntityToolsI:
         pass

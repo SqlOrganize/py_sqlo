@@ -1,10 +1,10 @@
 
 
-from src.icontainer import IContainer
-from src.model.ientity import IEntity
+from .container_i import ContainerI
+from .entity_i import EntityI
 
-class Entity(IEntity):
-    container: IContainer
+class Entity(EntityI):
+    container: ContainerI
 
     def __init__(self, config:dict) -> None:
         self._name: str = None

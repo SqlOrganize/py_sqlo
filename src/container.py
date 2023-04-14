@@ -3,16 +3,16 @@ import mysql.connector
 from mysql.connector.connection import MySQLConnection
 import json
 from os.path import exists
-from src.function.snake_case_to_camel_case import snake_case_to_camel_case
-from src.icontainer import IContainer
+from .function.snake_case_to_camel_case import snake_case_to_camel_case
+from py_sqlo.src.container_i import ContainerI
 
-from src.model.entity import Entity
-from src.model.entity_options.mapping import Mapping
-from src.model.entity_query import EntityQuery
-from src.model.entity_tools import EntityTools
-from src.model.field import Field
+from .entity import Entity
+from .entity_options.mapping import Mapping
+from .entity_query import EntityQuery
+from .entity_tools import EntityTools
+from .field import Field
 
-class Container(IContainer):
+class Container(ContainerI):
     """ Dependency injection cls.
     """
     
@@ -197,7 +197,7 @@ class Container(IContainer):
     
     @classmethod
     def explode_field(cls, entity_name:str, field_name:str) -> dict:
-        f = field_name.split(' ') 
+        f = field_name.split('-') 
 
         if(len(f) == 2):
             return {
@@ -223,12 +223,11 @@ class Container(IContainer):
             return cls._mapping[entity_name]
 
         try:
-            importlib.import_module("src.model.mapping."+entity_name)
-            Mapping_ = getattr("src.model.mapping."+entity_name, snake_case_to_camel_case(entity_name)+"Mapping")
-            cls._mapping[entity_name] = Mapping_(entity_name, prefix)
+            m = importlib.import_module("src.mapping."+entity_name)
+            Mapping_ = getattr(m, snake_case_to_camel_case(entity_name)+"Mapping")
+            cls._mapping[entity_name] = Mapping_(prefix)
 
         except ModuleNotFoundError:
-            print("Module not found")
-            # cls._mapping[entity_name] = Mapping(entity_name, prefix)
+            cls._mapping[entity_name] = Mapping(entity_name, prefix)
         
         return cls._mapping[entity_name]

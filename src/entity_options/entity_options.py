@@ -1,8 +1,8 @@
-from src.config import UNDEFINED
-from src.icontainer import IContainer
+from ..config import UNDEFINED
+from ..container_i import ContainerI
 
 class EntityOptions:
-    container: IContainer
+    container: ContainerI
 
     def __init__(self, entity_name: str, prefix: str = "") -> None:
         self._entity_name: str = entity_name

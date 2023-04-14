@@ -1,5 +1,5 @@
-from src.config import UNDEFINED
-from src.model.entity_options.entity_options import EntityOptions
+from .entity_options import EntityOptions
+from ..config import UNDEFINED
 
 class Mapping(EntityOptions):
     """ Ejemplo redefinir
@@ -65,3 +65,4 @@ class Mapping(EntityOptions):
         for field_id, subtree in tree["children"]:
             if Mapping.container.field_by_id(e.name()).is_main():
                 self._recursive_label(field_id, subtree, fields_label)
+

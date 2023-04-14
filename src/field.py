@@ -1,10 +1,10 @@
 
 
-from src.icontainer import IContainer
-from src.model.ifield import IField
+from py_sqlo.src.container_i import ContainerI
+from .field_i import FieldI
 
-class Field(IField):
-    container: IContainer
+class Field(FieldI):
+    container: ContainerI
 
     def __init__(self, config:dict) -> None:
         self._name = None

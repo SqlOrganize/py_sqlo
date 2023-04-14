@@ -1,7 +1,7 @@
 
 from abc import ABC, abstractmethod
 
-class IField(ABC):
+class FieldI(ABC):
     """
     Utilizada solamente en IContainer y como superclase de Field
     """

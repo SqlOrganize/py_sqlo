@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
-from src.model.field import Field
+from .field_i import FieldI
 
-class IEntity(ABC):
+class EntityI(ABC):
     """ 
     Entity interface.
     Utilizada solamente en IContainer y como superclase de Entity
@@ -28,7 +28,7 @@ class IEntity(ABC):
         pass
 
     @abstractmethod
-    def nf(self) -> list[Field]:
+    def nf(self) -> list[FieldI]:
         pass
 
     @abstractmethod
