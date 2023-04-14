@@ -30,7 +30,7 @@ class FieldI(ABC):
         pass
     
     @abstractmethod
-    def is_main(self):
+    def is_main(self) -> bool:
         pass
 
 

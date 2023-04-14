@@ -3,6 +3,8 @@ import mysql.connector
 from mysql.connector.connection import MySQLConnection
 import json
 from os.path import exists
+
+from py_sqlo.src.entity_options.entity_options import EntityOptions
 from .function.snake_case_to_camel_case import snake_case_to_camel_case
 from py_sqlo.src.container_i import ContainerI
 
@@ -90,6 +92,8 @@ class Container(ContainerI):
         Entity.container = cls
         EntityQuery.container = cls
         EntityTools.container = cls
+        EntityOptions.container = cls
+        Field.container = cls
 
     @classmethod
     def db_connect(cls) -> MySQLConnection:
