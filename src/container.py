@@ -7,7 +7,7 @@ from src.function.snake_case_to_camel_case import snake_case_to_camel_case
 from src.icontainer import IContainer
 
 from src.model.entity import Entity
-from src.model.entity_options.mapping import MappingEntityOptions
+from src.model.entity_options.mapping import Mapping
 from src.model.entity_query import EntityQuery
 from src.model.entity_tools import EntityTools
 from src.model.field import Field
@@ -49,7 +49,7 @@ class Container(IContainer):
     "instances of Field"
 
     _mapping:dict = dict()
-    "instances of MappingEntityOptions"
+    "instances of Mapping"
     
     @classmethod
     def _init_tree(cls):
@@ -224,11 +224,11 @@ class Container(IContainer):
 
         try:
             importlib.import_module("src.model.mapping."+entity_name)
-            MappingEntityOptions_ = getattr("src.model.mapping."+entity_name, snake_case_to_camel_case(entity_name)+"MappingEntityOptions")
-            cls._mapping[entity_name] = MappingEntityOptions_(entity_name, prefix)
+            Mapping_ = getattr("src.model.mapping."+entity_name, snake_case_to_camel_case(entity_name)+"Mapping")
+            cls._mapping[entity_name] = Mapping_(entity_name, prefix)
 
         except ModuleNotFoundError:
             print("Module not found")
-            # cls._mapping[entity_name] = MappingEntityOptions(entity_name, prefix)
+            # cls._mapping[entity_name] = Mapping(entity_name, prefix)
         
         return cls._mapping[entity_name]
