@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+
+from py_sqlo.src.entity_options.mapping_i import MappingI
 from .entity_options.entity_options_i import EntityOptionsI
 from .entity_tools_i import EntityToolsI
 from .entity_i import EntityI
@@ -87,7 +89,7 @@ class ContainerI(ABC):
 
     @classmethod
     @abstractmethod
-    def mapping(cls, entity_name:str, field_id:str) -> EntityOptionsI:
+    def mapping(cls, entity_name:str, field_id:str) -> MappingI:
         pass
 
     @classmethod

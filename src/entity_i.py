@@ -32,5 +32,13 @@ class EntityI(ABC):
         pass
 
     @abstractmethod
+    def mo(self) -> list[FieldI]:
+        pass
+
+    @abstractmethod
+    def oo(self) -> list[FieldI]:
+        pass
+
+    @abstractmethod
     def main(self) -> list[str]:
         pass

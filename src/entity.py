@@ -142,7 +142,7 @@ class Entity(EntityI):
         for entity_name in Entity.container.entity_names():
             e = Entity.container.entity(entity_name)
             for f in e.mo():
-                if f.entity_ref_name() == self.name():
+                if f.entity_ref().name() == self.name():
                     fields.append(f)
 
         return fields
@@ -157,7 +157,7 @@ class Entity(EntityI):
         for entity_name in Entity.container.entity_names():
             e = Entity.container.entity(entity_name)
             for f in e.oo():
-                if f.entity_ref_name() == self.name():
+                if f.entity_ref().name() == self.name():
                     fields.append(f)
 
         return fields

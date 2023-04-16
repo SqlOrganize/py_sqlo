@@ -222,14 +222,14 @@ class Container(ContainerI):
         return cls.field(entity_name, r[field_id]["field_name"])
 
     @classmethod
-    def mapping(cls, entity_name: str, prefix: str = ""):
+    def mapping(cls, entity_name: str, prefix: str = "") -> Mapping:
         if entity_name in cls._mapping:
             return cls._mapping[entity_name]
 
         try:
             m = importlib.import_module("src.mapping."+entity_name)
             Mapping_ = getattr(m, snake_case_to_camel_case(entity_name)+"Mapping")
-            cls._mapping[entity_name] = Mapping_(prefix)
+            cls._mapping[entity_name] = Mapping_(entity_name, prefix)
 
         except ModuleNotFoundError:
             cls._mapping[entity_name] = Mapping(entity_name, prefix)

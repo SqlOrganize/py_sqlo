@@ -104,10 +104,6 @@ class EntityQuery:
         self._having.append(having)
         return self
 
-    def entity_name(self, entity_name: str):
-        self._entity_name = entity_name
-        return self
-
     def _add_prefix(self, prefix: str):
         self._condition = add_prefix_multi_list(self._condition, prefix)
         self._order = add_prefix_dict(self._order, prefix)

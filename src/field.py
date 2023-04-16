@@ -72,12 +72,6 @@ class Field(FieldI):
         """ alias """
         return self._alias
 
-    def entity_name(self):
-        return self._entity_name
-
-    def entity_ref_name(self):
-        return self._entity_ref_name
-
     def entity(self):
         return Field.container.entity(self._entity_name)
 
