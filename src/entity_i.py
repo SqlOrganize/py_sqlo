@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-from .field_i import FieldI
 
 class EntityI(ABC):
     """ 
@@ -28,15 +27,18 @@ class EntityI(ABC):
         pass
 
     @abstractmethod
-    def nf(self) -> list[FieldI]:
+    def nf(self) -> list:
+        """Return a list of FieldI"""
         pass
 
     @abstractmethod
-    def mo(self) -> list[FieldI]:
+    def mo(self) -> list:
+        """Return a list of FieldI"""
         pass
 
     @abstractmethod
-    def oo(self) -> list[FieldI]:
+    def oo(self) -> list:
+        """Return a list of FieldI"""
         pass
 
     @abstractmethod

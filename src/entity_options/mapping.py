@@ -1,10 +1,14 @@
-from py_sqlo.src.entity_options.entity_options import EntityOptions
-from .mapping_i import MappingI
 from ..config import UNDEFINED
+from .entity_options import EntityOptions
 
 class Mapping(EntityOptions):
-    """ 
-    Mapear campos para que sean entendidos por el motor de base de datos 
+    """
+    Mapear campos para que sean entendidos por el motor de base de datos.
+
+    Define SQL, cada motor debe tener su propia clase mapping de forma tal que
+    sea traducido de forma correcta.
+
+    Sintaxis MySQL, MariaDB.
     
     Ejemplo de subclase opcional:
 
@@ -13,6 +17,9 @@ class Mapping(EntityOptions):
            return '''
     CONCAT("+self.pf()+"sed.numero, "+self.pt()+".division)
 '''
+
+    Las subclases deben soportar la sintaxis del motor que se encuentran 
+    utilizando.
     """
 
     def map(self, field_name: str):
@@ -34,9 +41,11 @@ class Mapping(EntityOptions):
             return getattr(self, m)()
 
         p = field_name.split(".")
-        m = "_default" if len(p) == 1 else "_"+p[1]
-        print("ejecutar "+m+ " "+p[0])
-        #return getattr(self, m)(p[0])
+        if len(p) == 1:
+           return getattr(self, "_default")(field_name)
+
+        m = "_"+p.pop()
+        return getattr(self, m)(".".join(p))
 
     def count(self) -> str:
         return "COUNT(*)"
@@ -93,4 +102,44 @@ class Mapping(EntityOptions):
         for field_id, subtree in tree["children"]:
             if Mapping.container.field_by_id(e.name()).is_main():
                 self._recursive_label(field_id, subtree, fields_label)
+
+    def search(self) -> str:
+        fields_search = []
+        for f in self.__class__.container.entity(self._entity_name).nf():
+            fields_search.append(self.__class__.container.mapping(self._entity_name, self._prefix).map(f.name()))
+
+        return "CONCAT_WS(' ', "+",".join(fields_search)+")"
+
+    def _default(self, field: str) -> str:
+        return self.pt()+"."+field
+    
+    def _date(self, field: str) -> str: 
+        return "CAST("+self.map(field)+" AS DATE)"
+    
+    def _ym(self, field: str) -> str: 
+        return "DATE_FORMAT("+self.map(field)+", '%Y-%m')"
+    
+    def _y(self, field: str) -> str: 
+        return "DATE_FORMAT("+self.map(field)+", '%Y')"
+    
+    def _avg(self, field: str) -> str: 
+        return "AVG("+self.map(field)+")"
+    
+    def _min(self, field: str) -> str: 
+        return "MIN("+self.map(field)+")"
+    
+    def _max(self, field: str) -> str:
+        return "MAX("+self.map(field)+")"
+    
+    def _sum(self, field: str) -> str: 
+        return "SUM("+self.map(field)+")"
+    
+    def _count(self, field: str) -> str: 
+        return "COUNT(DISTINCT "+self.map(field)+")"
+    
+    def _exists(self, field: str) -> str: 
+        return self._default(field)
+    
+    def _str_agg(self, field: str) -> str: 
+        return "GROUP_CONCAT(DISTINCT "+self.map(field)+" SEPARATOR ', ')"
 
