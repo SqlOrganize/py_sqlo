@@ -63,34 +63,25 @@ class Entity():
 
             setattr(self, "_"+k, config[k])
 
-    def n_(self) -> str:
-        """ name """
-        return self._name
-        
-    def s_(self) -> str:
-        """ schema. """
-        return self._schema + "." if self._schema else "" 
-     
-    def sn_(self) -> str:
-        """ schema.name """
-        return self.s_() + self.n_() 
-
-    def sna_(self) -> str:
-        """ schema.name AS alias """
-        return self.sn_() + " AS " + self._alias
-
-    def a_(self) -> str:  
-        """ alias. """
-        return self._alias
-
     def name(self) -> str:
         return self._name
 
     def alias(self) -> str:
         return self._alias
     
+    def schema_(self):
+        return self._schema + "." if self._schema else "" 
+    
     def schema(self):
         return self._schema
+    
+    def schema_name(self):
+        """ schema.name """
+        return self.schema_() + self.name()
+    
+    def schema_name_alias(self):
+        """ schema.name AS alias """
+        return self.schema_name() + " AS " +  self.alias()
 
     def identifier(self) -> list[str]:
         return self._identifier

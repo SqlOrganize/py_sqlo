@@ -46,6 +46,29 @@ class EntityQuery:
         array multiple cuya raiz es [field,option,value], ejemplo: [["nombre","=","unNombre"],[["apellido","=","unApellido"],["apellido","=","otroApellido","OR"]]]
         """
 
+        self._str_agg: dict = {}
+        """
+        Campos a los cuales se aplica str_agg
+
+        Array multiple definido por alias y los campos que se aplica str_agg
+
+        @EXAMPLE
+
+        -{"alias" => ["field1","field2"]} 
+        
+        @TRADUCCION DEL EJEMPLO
+
+        -GROUP_CONCAT(DISTINCT field1_map, " ", field2_map) AS "alias"
+
+        @STR_AGG A UN SOLO VALOR
+
+        Para aplicar GROUP_CONCAT a un solo valor, se puede utilizar como al-
+        ternativa la funcion de agreacion, por ejemplo persona.str_agg que se
+        traduce a:        
+        
+        -GROUP_CONCAT(DISTINCT persona)
+        """
+
     def cond (self, condition:list):
         self._condition.append(condition)
         return self
@@ -96,8 +119,12 @@ class EntityQuery:
     def group_concat(self, group: dict[list[str]]):
         self._group_concat.update(group)
         return self
+    
+    def str_agg(self, fields: dict[list[str]]):
+        self._str_agg.update(fields)
+        return self
 
-    def having(self, having: list):
+    def hav(self, having: list):
         self._having.append(having)
         return self
 
@@ -177,25 +204,98 @@ class EntityQuery:
         """
         SQL FIELDS
         """
-        field_names = list(set(self._group + self._fields))
-
         sql_fields = []
+
+        """
+        procesar _group y _fields
+        """
+        field_names = list(set(self._group + self._fields))
+        field_names.sort()
 
         for field_name in field_names:
             ff = EntityQuery.container.explode_field(self._entity_name, field_name)
             map = EntityQuery.container.mapping(ff["entity_name"], ff["field_id"]).map(ff["field_name"])
-            # $prefix = (!empty($f["field_id"])) ? $f["field_id"] . "-" : "";
-            # $alias = (is_integer($key)) ? $prefix . $f["field_name"] : $key;
-            # $f = $map . " AS \"" . $alias . "\"";
+            prefix = ff["field_id"]+"-" if ff["field_id"] else ""
+            sql_fields.append(map+" AS \"" + prefix + ff["field_name"] + "\"")
 
-        return ""
+        """
+        procesar _group_concat y _fields_concat
+        """
+        field_names_concat = self._group_concat | self._fields_concat
+        field_names_concat = dict(sorted(field_names_concat.items(), key=lambda item: item[1]))
+
+        for alias, field_names in field_names_concat.items():
+            map_ = []
+            for field_name in field_names:
+                ff = EntityQuery.container.explode_field(self._entity_name, field_name)
+                map = EntityQuery.container.mapping(ff["entity_name"], ff["field_id"]).map(ff["field_name"])
+                map_.append(map)
+            sql_fields.append("CONCAT_WS(', ', " + ", ".join(map_) + ") AS " + alias)
+
+        """
+        procesar _str_agg
+        """
+        _str_agg = dict(sorted(self._str_agg.items(), key=lambda item: item[1]))
+
+        for alias, field_names in _str_agg.items():
+            map_ = []
+            for field_name in field_names:
+                ff = EntityQuery.container.explode_field(self._entity_name, field_name)
+                map = EntityQuery.container.mapping(ff["entity_name"], ff["field_id"]).map(ff["field_name"])
+                map_.append(map)
+            sql_fields.append("GROUP_CONCAT(DISTINCT " + ", ' ', ".join(map_) + ") AS " + alias)
+
+        return """,
+""".join(sql_fields) 
     
-    def sql(self) -> str:
-        sql_fields = self._sql_fields()
+    def _group_by(self) -> str:
+        if not self._group and not self._group_concat:
+            return ""
         
+        group = []
+        for field_name in self._group:
+            f = self.__class__.container.explode_field(self._entity_name, field_name)
+            map = self.__class__.container.mapping(f["entity_name"], f["field_id"]).map(f["field_name"])
+            group.append(map)
+
+        for alias, field_name in self._group_concat.items():
+            group.append(alias)
+
+        return "GROUP BY "+", ".join(group)+"""
+"""
+    
+    def _from(self) -> str:    
+        return """ FROM 
+""" + self.__class__.container.entity(self._entity_name).schema_name_alias() + """
+"""
+
+    def _join(self) -> str:
+        tree = self.__class__.container.tree(self._entity_name)
+        return self._join_fk(tree, "")
+
+
+    def _join_fk(self, tree: dict, table_prefix: str):
+        sql = ""
+
+        if not table_prefix:
+            table_prefix = self.__class__.container.entity(self._entity_name).alias()
+
+        for field_id, value in tree.items():
+            entity_sn = self.container.entity(value["entity_name"]).schema_name()
+            sql += "LEFT OUTER JOIN " + entity_sn + " AS " + field_id + " ON (" + table_prefix + "." + value["field_name"] + " = " + field_id + """.id)
+"""
+            if value["children"]:
+                sql += self._join_fk(value["children"], field_id)
+
+        return sql
+
+    def sql(self) -> str:
         sql = """ SELECT DISTINCT
-""" 
-        sql += sql_fields
+""" + self._sql_fields() + """
+""" + self._from() + """
+""" + self._join() + """
+""" + self._group_by()
+
         return sql
 
 
