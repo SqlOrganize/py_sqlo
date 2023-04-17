@@ -6,7 +6,6 @@ from os.path import exists
 
 from py_sqlo.src.entity_options.entity_options import EntityOptions
 from .function.snake_case_to_camel_case import snake_case_to_camel_case
-from py_sqlo.src.container_i import ContainerI
 
 from .entity import Entity
 from .entity_options.mapping import Mapping
@@ -14,7 +13,7 @@ from .entity_query import EntityQuery
 from .entity_tools import EntityTools
 from .field import Field
 
-class Container(ContainerI):
+class Container():
     """ Dependency injection cls.
     """
     

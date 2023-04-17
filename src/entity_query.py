@@ -5,10 +5,8 @@ from .function.add_prefix_dict import add_prefix_dict
 from .function.remove_prefix_multi_list import remove_prefix_multi_list
 from .function.remove_prefix_dict import remove_prefix_dict
 
-from .container_i import ContainerI
-
 class EntityQuery:
-    container: ContainerI
+    container: any #Container
 
     def __init__(self, entity_name) -> None:
         self._entity_name = entity_name
@@ -54,7 +52,6 @@ class EntityQuery:
 
     def param (self, key:str, value): 
         return self.cond([key, "=",value])
-
 
     def params (self, params:dict):
         for k,v in params.items():
@@ -192,6 +189,7 @@ class EntityQuery:
             # $f = $map . " AS \"" . $alias . "\"";
 
         return ""
+    
     def sql(self) -> str:
         sql_fields = self._sql_fields()
         

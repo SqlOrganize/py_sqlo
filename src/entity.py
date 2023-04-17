@@ -1,10 +1,8 @@
 
 
-from .container_i import ContainerI
-from .entity_i import EntityI
 
-class Entity(EntityI):
-    container: ContainerI
+class Entity():
+    container: any #Container
 
     def __init__(self, config:dict) -> None:
         self._name: str = None

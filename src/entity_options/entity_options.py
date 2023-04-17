@@ -1,8 +1,7 @@
 from ..config import UNDEFINED
-from ..container_i import ContainerI
 
 class EntityOptions:
-    container: ContainerI
+    container: any #Container
 
     def __init__(self, entity_name: str, prefix: str = "") -> None:
         self._entity_name: str = entity_name

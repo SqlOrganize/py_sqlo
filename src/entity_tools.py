@@ -1,10 +1,8 @@
 
 
-from .entity_tools_i import EntityToolsI
-from .container_i import ContainerI
 
-class EntityTools(EntityToolsI):
-    container: ContainerI
+class EntityTools():
+    container: any #Container
 
     def __init__(self, entity_name) -> None:
         self._entity_name = entity_name
