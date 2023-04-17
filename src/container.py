@@ -183,8 +183,14 @@ class Container(ContainerI):
             cls._field[entity_name] = dict()
 
         if field_name not in cls._field[entity_name]:
-            cfg = cls.fields_config(entity_name)[field_name]
-            cls._field[entity_name][field_name] = Field(cfg)
+            if field_name in cls.fields_config(entity_name):
+                cfg = cls.fields_config(entity_name)[field_name]
+                cls._field[entity_name][field_name] = Field(cfg)
+            else:
+                cls._field[entity_name][field_name] = Field({
+                    "entity_name":entity_name,
+                    "name":field_name
+                })
 
         return cls._field[entity_name][field_name]
 

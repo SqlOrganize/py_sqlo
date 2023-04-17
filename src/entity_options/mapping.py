@@ -63,7 +63,7 @@ class Mapping(EntityOptions):
             f = Mapping.container.explode_field(self._entity_name, field_name)
             identifier.append(Mapping.container.mapping(f["entity_name"], f["field_id"])).map(f["field_name"])
 
-        return 'CONCAT_WS("'+UNDEFINED+'",'+','.join(identifier)+''')
+        return 'CONCAT_WS("'+UNDEFINED+'",'+', '.join(identifier)+''')
 '''
 
     def label(self) -> str:
@@ -87,13 +87,13 @@ class Mapping(EntityOptions):
                 return Mapping.container.mapping(f["entity_name"], f["field_id"]).map(f["field_name"])
             fields_label_.append(res(l))
 
-        return "CONCAT_WS(' ', "+",".join(fields_label_)+")"
+        return "CONCAT_WS(' ', "+", ".join(fields_label_)+")"
 
     def _recursive_label(self, key: str, tree: dict, fields_label: list):
         """
         Se completa fields_label por referencia de forma recursiva
         """
-        e = Mapping.container.entity(self._entity_name)
+        e = Mapping.container.entity(tree["entity_name"])
 
         for field in e.nf():
             if field.is_main():
@@ -108,7 +108,7 @@ class Mapping(EntityOptions):
         for f in self.__class__.container.entity(self._entity_name).nf():
             fields_search.append(self.__class__.container.mapping(self._entity_name, self._prefix).map(f.name()))
 
-        return "CONCAT_WS(' ', "+",".join(fields_search)+")"
+        return "CONCAT_WS(' ', "+", ".join(fields_search)+")"
 
     def _default(self, field: str) -> str:
         return self.pt()+"."+field
