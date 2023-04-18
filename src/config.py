@@ -9,6 +9,7 @@ APPROX = "=~" #comparacion aproximadamente igual
 APPROX_LEFT = "-=~" #comparacion aproximadamente igual por izquierda (para strings, equivale a LIKE '%something')
 APPROX_RIGHT = "=~-" #comparacion aproximadamente igual por derecha (para strings, equivale a LIKE 'something%')
 NONEQUAL = "!=" #comparacion distinto
+NONAPPROX = "!=~" #comparacion distinto
 LESS = "<" #comparacion menor
 LESS_EQUAL = "<=" #comparacion menor o igual
 GREATER = ">" #comparacion mayor

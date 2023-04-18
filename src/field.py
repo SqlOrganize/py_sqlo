@@ -24,7 +24,7 @@ class Field():
         self._type = None
         """ tipo de datos definidos en la base de datos """ 
 
-        self._dataType = "string"
+        self._data_type = "string"
         """ Tipo de datos generico 
             int
             blob
@@ -79,5 +79,8 @@ class Field():
     def is_main(self):
         return True if self.name() in Field.container.entity(self._entity_name).main() else False
 
+    def data_type(self):
+        return self._data_type
+    
 
 

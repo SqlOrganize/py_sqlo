@@ -27,10 +27,6 @@ class Mapping(EntityOptions):
         Verificar la existencia de metodo eclusivo, si no exite, buscar metodo
         predefinido.
 
-        TODO: 
-        -Permitir la aplicacion de varios mapping utilizando el caracter "." como
-        separador
-     
         Ejemplo: 
         -mapping.map("nombre")
         -mapping.map("fecha_alta.max.y"); //aplicar max, luego y
@@ -77,7 +73,7 @@ class Mapping(EntityOptions):
 
         for field_id, subtree in tree.items():
             if Mapping.container.field_by_id(self._entity_name, field_id).is_main():
-                self._recursive_label(field_id, subtree, fields_label)
+                fields_label = fields_label + self._recursive_label(field_id, subtree)
 
         fields_label_ = []
 
@@ -89,19 +85,23 @@ class Mapping(EntityOptions):
 
         return "CONCAT_WS(' ', "+", ".join(fields_label_)+")"
 
-    def _recursive_label(self, key: str, tree: dict, fields_label: list):
+    def _recursive_label(self, key: str, tree: dict):
         """
         Se completa fields_label por referencia de forma recursiva
         """
+        fields_label: list = []
+
         e = Mapping.container.entity(tree["entity_name"])
 
         for field in e.nf():
             if field.is_main():
                 fields_label.append(key+"-"+field.name())
 
-        for field_id, subtree in tree["children"]:
-            if Mapping.container.field_by_id(e.name()).is_main():
-                self._recursive_label(field_id, subtree, fields_label)
+        for field_id, subtree in tree["children"].items():
+            if Mapping.container.field_by_id(e.name(), field_id).is_main():
+                fields_label = fields_label + self._recursive_label(field_id, subtree)
+
+        return fields_label
 
     def search(self) -> str:
         fields_search = []

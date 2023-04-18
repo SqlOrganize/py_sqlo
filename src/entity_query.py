@@ -1,5 +1,6 @@
 
-from .config import AND_, EQUAL, OR_
+from py_sqlo.src.function.concat import concat
+from .config import AND_, EQUAL, FF, NONAPPROX, OR_, NONEQUAL
 from .function.add_prefix_multi_list import add_prefix_multi_list
 from .function.add_prefix_dict import add_prefix_dict
 from .function.remove_prefix_multi_list import remove_prefix_multi_list
@@ -289,12 +290,119 @@ class EntityQuery:
 
         return sql
 
+    def _cond(self, condition):
+        """
+        Metodo inicial para definir condicion
+        """
+        if not condition:
+            return ""
+        
+        condition_mode = self._condition_recursive(condition)
+    
+        return condition_mode["condition"]
+
+    def _condition_recursive(self, condition: list) -> dict:
+        """
+        Metodo recursivo para definir condicion
+
+        Si en la posicion 0 es un string significa que es un campo a buscar, 
+        caso contrario es un nuevo conjunto (list) de campos que debe ser 
+        recorrido
+        """
+
+        if isinstance(condition[0], list):
+            return self._condition_iterable(condition)
+
+        option = EQUAL if not condition[1] else condition[1] #por defecto se define EQUAL
+        value = None if not condition[2] else condition[2] #hay opciones de configuracion que pueden no definir valores
+        mode = AND_ if not condition[3] else condition[3]  #el modo indica la concatenacion con la opcion precedente, se usa en una misma lista de opciones
+
+        condition_ = self._condition_field_check_value(condition[0], option, value)
+        return {"condition": condition_, "mode": mode}
+
+    def _condition_iterable(self, condition_iterable: list) -> dict:
+        condition_modes:list[dict] = []
+
+        for ci in condition_iterable:
+            cm = self._condition_recursive(ci)
+            condition_modes.append(cm) 
+
+        mode_return = condition_modes[0]["mode"]
+        condition = ""
+
+        for cm in condition_modes:
+            if condition:
+                condition += """
+""" + cm["mode"] + " "
+
+            condition += cm["condition"]
+            
+        return {
+            "condition": """(
+""" + condition + """
+)""", 
+            "mode": mode_return
+        }
+
+    def _condition_field_check_value(self, field: str, option, value) -> str:
+        """
+        Combinar parametros y definir SQL con la opcion
+        """
+        if not isinstance(value, list):
+            condition = self._condition_field(field, option, value)
+            if not condition:
+                 raise "No pudo definirse el SQL de la condicion del campo: " + self._entity_name + "." + field
+            return condition
+
+        condition = ""
+        cond = False
+
+        for v in value:
+            if cond:
+                condition += " " + OR_ + " " if option == EQUAL else AND_ if option == NONEQUAL else False
+                if not condition:
+                    raise "Error al definir opción"
+            else:
+                cond = True 
+
+            condition += self._condition_field_check_value(field, option, v)
+
+        return """(
+""" + condition + """
+)"""
+
+    
+    def _condition_field(self, field, option, value: str):
+        """
+        Traducir campo y definir SQL con la opcion
+        """
+        f = self.__class__.container.explode_field(self._entity_name, field)
+
+        if value[0].startswith(FF): #definir condicion entre fields
+            v = self.__class__.container.explode_field(self._entity_name, value[0].replace(FF, '', 1))
+            field_sql1 = self.__class__.container.mapping(f["entity_name"], f["field_id"]).map(f["field_name"])
+            field_sql2 = self.__class__.container.mapping(v["entity_name"], v["field_id"]).map(v["field_name"])
+
+            if option == NONEQUAL:
+                return "(lower(CAST(" + field_sql1 + " AS CHAR)) LIKE CONCAT('%', lower(CAST(" + field_sql2 + " AS CHAR)), '%'))"
+            elif option == NONAPPROX:
+                return "(lower(CAST(" + field_sql1 + " AS CHAR)) NOT LIKE CONCAT('%', lower(CAST(" + field_sql2 + " AS CHAR)), '%'))"
+            else:
+                return "(" + field_sql1 + " " + option + " " + field_sql2 + ") ";  
+    
+        return self.__class__.container.condition(f["entity_name"], f["field_id"]).cond(f["field_name"], option, value)
+
+
     def sql(self) -> str:
+        condition = self._cond(self._condition)
+        having = self._cond(self._having)
         sql = """ SELECT DISTINCT
 """ + self._sql_fields() + """
 """ + self._from() + """
 """ + self._join() + """
-""" + self._group_by()
+""" + concat(condition, 'WHERE ') + """
+""" + self._group_by() + """
+""" + concat(having, 'WHERE ')
 
         return sql
 
