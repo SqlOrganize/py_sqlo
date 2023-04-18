@@ -63,4 +63,3 @@ class Condition(EntityOptions):
         cond2 =  self.cond("search", option, value)
         return "(" + cond1 + "OR " + cond2 + ")"
  
-  }
