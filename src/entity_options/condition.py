@@ -1,4 +1,5 @@
-from ..config import UNDEFINED
+from py_sqlo.src.function.to_bool import to_bool
+from ..config import APPROX, EQUAL, NONAPPROX, NONEQUAL
 from .entity_options import EntityOptions
 
 class Condition(EntityOptions):
@@ -33,12 +34,16 @@ class Condition(EntityOptions):
         if hasattr(self.__class__, m) and callable(getattr(self.__class__, m)):
             return getattr(self, m)(option, value)
 
+        m = self._define_condition(field_name)
+        return getattr(self, m)(field_name, option, value)
+
+    def _define_condition(self, field_name):
         p = field_name.split(".")
         if len(p) == 1:
-           return self._define_condition_field(field_name)
+            return self._define_condition_field(field_name)
 
-        m = "_"+p.pop()
-        return getattr(self, m)(".".join(p))
+        m = p.pop() #se resuelve la funcion ubicada mas a la derecha, que sera la ultima en ejecutarse y la que definira el formato final
+        return self._define_condition_func(".".join(p), m) 
 
     def _define_condition_field(self, field_name):
         """
@@ -46,20 +51,98 @@ class Condition(EntityOptions):
         """
         field = self.__class__.container.field(self._entity_name, field_name)
         match field.data_type():
-            case ["string" | "text"]:
-                return "_string"
+            case "string" | "text":
+                return "_quote"
 
             case "boolean":
                 return "_boolean"
 
-            case other:
+            case _:
                 return "_default"
 
-    def label_search(self, option, value) -> str:
-        """
-        Combinacion entre label y search
-        """
-        cond1 =  self.cond("label",option, value)
-        cond2 =  self.cond("search", option, value)
-        return "(" + cond1 + "OR " + cond2 + ")"
- 
+    def _define_condition_func(self, field_name, func):
+        match func: 
+            case "count" | "avg" | "sum": 
+                return "_default"
+
+            case "is_set" | "exists":
+                return "_exists"
+            
+            case "y":
+                return "_quote"
+
+            case _:
+                return self._define_condition(field_name); #si no resuelve, intenta nuevamente (ejemplo field.count.max, intentara nuevamente con field.count)
+
+    
+    def _default(self, field_name, option, value): 
+        field = self.__class__.container.mapping(self._entity_name, self._prefix).map(field_name)
+        
+        c = self._exists(field, option, value)
+        if c:
+            return c
+
+        c = self._approx_cast(field, option, value)
+        if c:
+            return c
+
+        v = self._value(field_name, option, value)
+
+        return "(" + field + " " + option + " " + v._sql(field_name) + ") "  
+    
+    def _value(self, field_name, option, value):
+        v = self.__class__.container.value(self._entity_name, self._prefix)
+        v._set(field_name, value)  
+        if not v._check(field_name):
+            raise "Valor incorrecto al definir condicion _default: " + self._entity_name + " " + field_name + " " + option + " " + value
+        return v
+
+
+    def _quote(self, field_name, option, value):
+        field = self.__class__.container.mapping(self._entity_name, self._prefix).map(field_name)
+
+        c = self._exists(field, option, value)
+        if c:
+            return c
+
+        c = self._approx(field, option, value)
+        if c:
+            return c
+        
+        v = self._value(field_name, option, value)
+
+        return "(" + field + " " + option + " " + v._sql(field_name) + ") "    
+  
+
+    def _boolean(self, field_name, option, value): 
+        field = self.__class__.container.mapping(self._entity_name, self._prefix).map(field_name)
+    
+        v = self._value(field_name, option, value)
+
+        return "(" + field + " " + option + " " + v._sql(field_name) + ") "    
+  
+
+    def _exists(self, field_name: str, option: str, value: any) ->str:
+        if(not isinstance(value, bool)):
+            return ""
+
+        if option != EQUAL and option != NONEQUAL:
+            raise "La combinacion field-option-value no está permitida para definir existencia: " + field_name + " " + option + " " + value
+
+        return "(" + field_name + " IS NOT NULL) " if (value and option == EQUAL) or (not value and option == NONEQUAL) else "(" + field_name + " IS NULL) "
+
+    def _approx_cast(self, field_name, option, value):
+        if option == APPROX: 
+            return "(CAST(" + field_name + " AS CHAR) LIKE '%" + value + "%' )"
+
+        if option == NONAPPROX:
+            return "(CAST(" + field_name + " AS CHAR) NOT LIKE '%" + value + "%' )"
+
+        return ""
+
+    def _approx(self, field_name, option, value):
+        if option == APPROX: 
+            return "(lower(" + field_name + ") LIKE lower('%" + value + "%'))"
+
+        if option == NONAPPROX:
+            return "(lower(" + field_name + ") NOT LIKE lower('%" + value + "%'))"

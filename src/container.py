@@ -9,6 +9,7 @@ from .function.snake_case_to_camel_case import snake_case_to_camel_case
 
 from .entity import Entity
 from .entity_options.mapping import Mapping
+from .entity_options.condition import Condition
 from .entity_query import EntityQuery
 from .entity_tools import EntityTools
 from .field import Field
@@ -50,6 +51,9 @@ class Container():
     "instances of Field"
 
     _mapping:dict = dict()
+    "instances of Mapping"
+    
+    _condition:dict = dict()
     "instances of Mapping"
     
     @classmethod
@@ -240,3 +244,18 @@ class Container():
             cls._mapping[entity_name] = Mapping(entity_name, field_id)
         
         return cls._mapping[entity_name]
+
+    @classmethod
+    def condition(cls, entity_name: str, field_id:str = "") -> Condition:
+        if entity_name in cls._condition:
+            return cls._condition[entity_name]
+
+        try:
+            m = importlib.import_module("src.condition."+entity_name)
+            Condition_ = getattr(m, snake_case_to_camel_case(entity_name)+"Condition")
+            cls._condition[entity_name] = Condition_(entity_name, field_id)
+
+        except ModuleNotFoundError:
+            cls._condition[entity_name] = Condition(entity_name, field_id)
+        
+        return cls._condition[entity_name]

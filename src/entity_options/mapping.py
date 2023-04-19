@@ -40,7 +40,7 @@ class Mapping(EntityOptions):
         if len(p) == 1:
            return getattr(self, "_default")(field_name)
 
-        m = "_"+p.pop()
+        m = "_"+p.pop() #se comienza por la funcion ubicada mas a la derecha que sera la ultima en ejecutarse
         return getattr(self, m)(".".join(p))
 
     def count(self) -> str:
