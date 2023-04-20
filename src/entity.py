@@ -4,8 +4,9 @@
 class Entity():
     container: any #Container
 
-    def __init__(self, config:dict) -> None:
-        self._name: str = None
+    def __init__(self, db, entity_name:str) -> None:
+        self.db = db #Database 
+        self._name: str = entity_name
         self._alias: str = None
         self._schema: str = None
         
@@ -50,7 +51,8 @@ class Entity():
         Una entidad puede tener un y solo un conjunto de campos unique_multiple
         @example ["field1","field2",...]
         """
-        for k,v in config.items():
+        config = db.entities_config(self.name())
+        for k,v in config:
             if "+" in k:
                 k = k.rstrip("+")
                 for vv in v:

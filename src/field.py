@@ -4,7 +4,8 @@
 class Field():
     container: any #Container
 
-    def __init__(self, config:dict) -> None:
+    def __init__(self, db, config:dict) -> None:
+        self.db = db #Database
         self._name = None
         self._entity_name = None
         self._entity_ref_name = None

@@ -70,14 +70,14 @@ class EntityQuery:
         -GROUP_CONCAT(DISTINCT persona)
         """
 
-    def cond (self, condition:list):
+    def cond(self, condition:list):
         self._condition.append(condition)
         return self
 
-    def param (self, key:str, value): 
+    def param(self, key:str, value): 
         return self.cond([key, "=",value])
 
-    def params (self, params:dict):
+    def params(self, params:dict):
         for k,v in params.items():
             self.cond([k,"=",v])
         return self
