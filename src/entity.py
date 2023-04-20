@@ -2,10 +2,8 @@
 
 
 class Entity():
-    container: any #Container
-
     def __init__(self, db, entity_name:str) -> None:
-        self.db = db #Db 
+        self._db = db #Db 
         self._name: str = entity_name
         self._alias: str = None
         self._schema: str = None
@@ -52,7 +50,7 @@ class Entity():
         @example ["field1","field2",...]
         """
         config = db.entities_config(self.name())
-        for k,v in config:
+        for k,v in config.items():
             if "+" in k:
                 k = k.rstrip("+")
                 for vv in v:
@@ -90,7 +88,7 @@ class Entity():
 
     def pk(self):
         "primary key"
-        return Entity.container.field(self.name(), "id")
+        return self._db.field(self.name(), "id")
 
     def nf(self) -> list:
         "fields no fk"
@@ -107,7 +105,7 @@ class Entity():
     def _fields(self, field_names):
         fields = []
         for field_name in field_names:
-            fields.append(Entity.container.field(self.name(), field_name))
+            fields.append(self._db.field(self.name(), field_name))
         return fields
 
     def fk(self):
@@ -130,8 +128,8 @@ class Entity():
         its neccesary to iterate over all entities
         """
         fields = []
-        for entity_name in Entity.container.entity_names():
-            e = Entity.container.entity(entity_name)
+        for entity_name in self._db.entity_names():
+            e = self._db.entity(entity_name)
             for f in e.mo():
                 if f.entity_ref().name() == self.name():
                     fields.append(f)
@@ -145,8 +143,8 @@ class Entity():
         its neccesary to iterate over all entities
         """
         fields = []
-        for entity_name in Entity.container.entity_names():
-            e = Entity.container.entity(entity_name)
+        for entity_name in self._db.entity_names():
+            e = self._db.entity(entity_name)
             for f in e.oo():
                 if f.entity_ref().name() == self.name():
                     fields.append(f)
@@ -160,7 +158,7 @@ class Entity():
         return self._order_default
 
     def field_names(self):
-        return Entity.container.field_names(self.name())
+        return self._db.field_names(self.name())
 
     def unique(self) -> list:
         return self._unique

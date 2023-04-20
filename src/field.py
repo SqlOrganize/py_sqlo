@@ -2,12 +2,10 @@
 
 
 class Field():
-    container: any #Container
-
-    def __init__(self, db, config:dict) -> None:
-        self.db = db #Db
-        self._name = None
-        self._entity_name = None
+    def __init__(self, db, entity_name:str, field_name:str) -> None:
+        self._db = db #Db
+        self._name = field_name
+        self._entity_name = entity_name
         self._entity_ref_name = None
         self._alias = None
         self._default = None
@@ -50,6 +48,7 @@ class Field():
             lista de valores permitidos
         """
     
+        config = self._db.field_config(entity_name, field_name)
         for k,v in config.items():
             if "+" in k:
                 k = k.rstrip("+")
@@ -72,16 +71,18 @@ class Field():
         return self._alias
 
     def entity(self):
-        return Field.container.entity(self._entity_name)
+        return self._db.entity(self._entity_name)
 
     def entity_ref(self):
-        return Field.container.entity(self._entity_ref_name)
+        return self._db.entity(self._entity_ref_name)
     
     def is_main(self):
-        return True if self.name() in Field.container.entity(self._entity_name).main() else False
+        return True if self.name() in self._db.entity(self._entity_name).main() else False
 
     def data_type(self):
         return self._data_type
     
+    def default(self):
+        return self._default
 
 

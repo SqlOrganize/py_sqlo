@@ -7,9 +7,8 @@ from .function.remove_prefix_multi_list import remove_prefix_multi_list
 from .function.remove_prefix_dict import remove_prefix_dict
 
 class EntityQuery:
-    container: any #Container
-
-    def __init__(self, entity_name) -> None:
+    def __init__(self, db, entity_name:str) -> None:
+        self._db = db
         self._entity_name = entity_name
         self._condition = []
         """
@@ -106,7 +105,7 @@ class EntityQuery:
         return self
 
     def fields_tree(self):
-        self._fields = EntityQuery.container.tools(self._entity_name).field_names()
+        self._fields = self._db.tools(self._entity_name).field_names()
         return self
 
     def fields_concat(self, fields: dict[list[str]]):
@@ -150,8 +149,8 @@ class EntityQuery:
         # campos unicos multiples
         Se definen a traves del atributo Entity._unique_multiple
         """
-        unique_fields: list = EntityQuery.container.entity(self._entity_name).unique()
-        unique_fields_multiple: list = EntityQuery.container.entity(self._entity_name).unique_multiple()
+        unique_fields: list = self._db.entity(self._entity_name).unique()
+        unique_fields_multiple: list = self._db.entity(self._entity_name).unique_multiple()
         
         condition = []
         # if "id" in params and params["id"]:
@@ -214,8 +213,8 @@ class EntityQuery:
         field_names.sort()
 
         for field_name in field_names:
-            ff = EntityQuery.container.explode_field(self._entity_name, field_name)
-            map = EntityQuery.container.mapping(ff["entity_name"], ff["field_id"]).map(ff["field_name"])
+            ff = self._db.explode_field(self._entity_name, field_name)
+            map = self._db.mapping(ff["entity_name"], ff["field_id"]).map(ff["field_name"])
             prefix = ff["field_id"]+"-" if ff["field_id"] else ""
             sql_fields.append(map+" AS \"" + prefix + ff["field_name"] + "\"")
 
@@ -228,8 +227,8 @@ class EntityQuery:
         for alias, field_names in field_names_concat.items():
             map_ = []
             for field_name in field_names:
-                ff = EntityQuery.container.explode_field(self._entity_name, field_name)
-                map = EntityQuery.container.mapping(ff["entity_name"], ff["field_id"]).map(ff["field_name"])
+                ff = self._db.explode_field(self._entity_name, field_name)
+                map = self._db.mapping(ff["entity_name"], ff["field_id"]).map(ff["field_name"])
                 map_.append(map)
             sql_fields.append("CONCAT_WS(', ', " + ", ".join(map_) + ") AS " + alias)
 
@@ -241,8 +240,8 @@ class EntityQuery:
         for alias, field_names in _str_agg.items():
             map_ = []
             for field_name in field_names:
-                ff = EntityQuery.container.explode_field(self._entity_name, field_name)
-                map = EntityQuery.container.mapping(ff["entity_name"], ff["field_id"]).map(ff["field_name"])
+                ff = self._db.explode_field(self._entity_name, field_name)
+                map = self._db.mapping(ff["entity_name"], ff["field_id"]).map(ff["field_name"])
                 map_.append(map)
             sql_fields.append("GROUP_CONCAT(DISTINCT " + ", ' ', ".join(map_) + ") AS " + alias)
 
@@ -255,8 +254,8 @@ class EntityQuery:
         
         group = []
         for field_name in self._group:
-            f = self.__class__.container.explode_field(self._entity_name, field_name)
-            map = self.__class__.container.mapping(f["entity_name"], f["field_id"]).map(f["field_name"])
+            f = self._db.explode_field(self._entity_name, field_name)
+            map = self._db.mapping(f["entity_name"], f["field_id"]).map(f["field_name"])
             group.append(map)
 
         for alias, field_name in self._group_concat.items():
@@ -267,11 +266,11 @@ class EntityQuery:
     
     def _from(self) -> str:    
         return """ FROM 
-""" + self.__class__.container.entity(self._entity_name).schema_name_alias() + """
+""" + self._db.entity(self._entity_name).schema_name_alias() + """
 """
 
     def _join(self) -> str:
-        tree = self.__class__.container.tree(self._entity_name)
+        tree = self._db.tree(self._entity_name)
         return self._join_fk(tree, "")
 
 
@@ -279,10 +278,10 @@ class EntityQuery:
         sql = ""
 
         if not table_prefix:
-            table_prefix = self.__class__.container.entity(self._entity_name).alias()
+            table_prefix = self._db.entity(self._entity_name).alias()
 
         for field_id, value in tree.items():
-            entity_sn = self.container.entity(value["entity_name"]).schema_name()
+            entity_sn = self._db.entity(value["entity_name"]).schema_name()
             sql += "LEFT OUTER JOIN " + entity_sn + " AS " + field_id + " ON (" + table_prefix + "." + value["field_name"] + " = " + field_id + """.id)
 """
             if value["children"]:
@@ -376,12 +375,12 @@ class EntityQuery:
         """
         Traducir campo y definir SQL con la opcion
         """
-        f = self.__class__.container.explode_field(self._entity_name, field)
+        f = self._db.explode_field(self._entity_name, field)
 
         if value[0].startswith(FF): #definir condicion entre fields
-            v = self.__class__.container.explode_field(self._entity_name, value[0].replace(FF, '', 1))
-            field_sql1 = self.__class__.container.mapping(f["entity_name"], f["field_id"]).map(f["field_name"])
-            field_sql2 = self.__class__.container.mapping(v["entity_name"], v["field_id"]).map(v["field_name"])
+            v = self._db.explode_field(self._entity_name, value[0].replace(FF, '', 1))
+            field_sql1 = self._db.mapping(f["entity_name"], f["field_id"]).map(f["field_name"])
+            field_sql2 = self._db.mapping(v["entity_name"], v["field_id"]).map(v["field_name"])
 
             if option == NONEQUAL:
                 return "(lower(CAST(" + field_sql1 + " AS CHAR)) LIKE CONCAT('%', lower(CAST(" + field_sql2 + " AS CHAR)), '%'))"
@@ -390,7 +389,7 @@ class EntityQuery:
             else:
                 return "(" + field_sql1 + " " + option + " " + field_sql2 + ") ";  
     
-        return self.__class__.container.condition(f["entity_name"], f["field_id"]).cond(f["field_name"], option, value)
+        return self._db.condition(f["entity_name"], f["field_id"]).cond(f["field_name"], option, value)
 
 
     def sql(self) -> str:

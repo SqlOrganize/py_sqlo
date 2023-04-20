@@ -49,7 +49,7 @@ class Condition(EntityOptions):
         """
         traducir field_name sin funcion
         """
-        field = self.__class__.container.field(self._entity_name, field_name)
+        field = self._db.field(self._entity_name, field_name)
         match field.data_type():
             case "string" | "text":
                 return "_quote"
@@ -76,7 +76,7 @@ class Condition(EntityOptions):
 
     
     def _default(self, field_name, option, value): 
-        field = self.__class__.container.mapping(self._entity_name, self._prefix).map(field_name)
+        field = self._db.mapping(self._entity_name, self._prefix).map(field_name)
         
         c = self._exists(field, option, value)
         if c:
@@ -91,7 +91,7 @@ class Condition(EntityOptions):
         return "(" + field + " " + option + " " + v._sql(field_name) + ") "  
     
     def _value(self, field_name, option, value):
-        v = self.__class__.container.value(self._entity_name, self._prefix)
+        v = self._db.value(self._entity_name, self._prefix)
         v._set(field_name, value)  
         if not v._check(field_name):
             raise "Valor incorrecto al definir condicion _default: " + self._entity_name + " " + field_name + " " + option + " " + value
@@ -99,7 +99,7 @@ class Condition(EntityOptions):
 
 
     def _quote(self, field_name, option, value):
-        field = self.__class__.container.mapping(self._entity_name, self._prefix).map(field_name)
+        field = self._db.mapping(self._entity_name, self._prefix).map(field_name)
 
         c = self._exists(field, option, value)
         if c:
@@ -115,7 +115,7 @@ class Condition(EntityOptions):
   
 
     def _boolean(self, field_name, option, value): 
-        field = self.__class__.container.mapping(self._entity_name, self._prefix).map(field_name)
+        field = self._db.mapping(self._entity_name, self._prefix).map(field_name)
     
         v = self._value(field_name, option, value)
 
