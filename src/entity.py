@@ -5,7 +5,7 @@ class Entity():
     container: any #Container
 
     def __init__(self, db, entity_name:str) -> None:
-        self.db = db #Database 
+        self.db = db #Db 
         self._name: str = entity_name
         self._alias: str = None
         self._schema: str = None

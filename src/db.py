@@ -86,6 +86,10 @@ class Db():
     def entities_config(self, entity_name):
         return self._entities_config[entity_name]
 
+    def field_config(self, entity_name, field_name):
+        config = self.fields_config(entity_name) 
+        return config[field_name] if field_name in config else {} 
+
     def fields_config(self, entity_name) -> dict:
         if entity_name not in self._fields_config:
             with open(self.config["path_model"]+"fields/_"+entity_name+".json", 'r', encoding='utf-8') as file:
@@ -137,10 +141,7 @@ class Db():
                 cfg = self.fields_config(entity_name)[field_name]
                 self._field[entity_name][field_name] = Field(self, cfg)
             else:
-                self._field[entity_name][field_name] = Field(self, {
-                    "entity_name":entity_name,
-                    "name":field_name
-                })
+                self._field[entity_name][field_name] = Field(self, entity_name, field_name)
 
         return self._field[entity_name][field_name]
 

@@ -6,9 +6,11 @@ class Values(EntityOptions):
     """
     Values of entity
     """
-    def __init__(self, entity_name: str, prefix: str = "") -> None:
+    def __init__(self, db, entity_name: str, prefix: str = "") -> None:
         super().__init__(entity_name, prefix)
        
+        self.db = db
+
         self._logs: Logging = Logging()
         """
         Logs de procesamiento de valores
@@ -50,7 +52,7 @@ class Values(EntityOptions):
         """
         traducir field_name sin funcion
         """
-        field = self.__class__.container.field(self._entity_name, field_name)
+        field = self.db.field(self._entity_name, field_name)
         match field.data_type():
             case "year":
                 return "_set_year"
