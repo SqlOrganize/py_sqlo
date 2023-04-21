@@ -91,9 +91,12 @@ class Condition(EntityOptions):
     
     def _value(self, field_name, option, value):
         v = self._db.value(self._entity_name, self._prefix)
-        v._set(field_name, value)  
+
+        v._set(field_name, value)
+
         if not v._check(field_name):
             raise "Valor incorrecto al definir condicion _default: " + self._entity_name + " " + field_name + " " + option + " " + value
+        
         return v
 
     def _quote(self, field_name, option, value):
