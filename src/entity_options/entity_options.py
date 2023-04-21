@@ -26,12 +26,16 @@ class EntityOptions:
         return self
     
     def call(self, method:str):
-        """ Llamar a call_fields utilizando los field_names definidos en la entidad.
+        """
+        Ejecutar metodo en field_names definidos en la configuracion de la entidad
+
+        Los metodos posibles para ejecucion no deben llevar otro parametro mas que el field_name
         """
         return self.call_fields(self._db.field_names(self._entity_name), method)
     
     def to_fields(self, field_names: list[str], method:str) -> dict: 
-        """ Ejecutar metodo y almacenar resultado en n array de fields
+        """ 
+        Ejecutar metodo y almacenar valores en un diccionario
         """
         row = {}
         for field_name in field_names:
@@ -46,7 +50,8 @@ class EntityOptions:
 
 
     def from_fields(self, row: dict, field_names: list[str], method:str) -> list: 
-        """ Ejecutar metodo y almacenar resultado en n array de fields
+        """ 
+        Ejecutar metodo y obtener valores desde un diccionario
         """
         if row:
             for field_name in field_names:

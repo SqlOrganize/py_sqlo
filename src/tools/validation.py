@@ -33,8 +33,8 @@ class Validation():
         Por defecto se asigna el menos critico "info"
         """
     
-    def _is_empty_or_undefined(self):
-        self.__class__.is_empty_or_undefined(self._value)
+    def _is_none_or_undefined(self):
+        self.__class__.is_none_or_undefined(self._value)
 
         
     def _is_undefined(self):
@@ -42,7 +42,7 @@ class Validation():
 
     
     def name(self):
-        if self.is_empty_or_undefined():
+        if self.is_none_or_undefined():
             return self
         
         pattern = re.compile("/[^a-zA-ZáéíóúñÁÉÍÓÚÑçÇüÜ\s\']/")
@@ -50,15 +50,19 @@ class Validation():
             self._errors.append({"type":"name", "msg":"Formato no valido"})
 
     def required(self):
-        if not self._is_undefined() and not self._value:
+        if not self._is_none_or_undefined():
             self._errors.append({"type":"required", "msg":"Valor obligatorio"})
 
         return self
 
     @classmethod
-    def is_empty_or_undefined(cls, value):
-        return True if not value or cls.is_undefined(value) else False
+    def is_none_or_undefined(cls, value):
+        return True if cls.is_none(value) or cls.is_undefined(value) else False
     
     @classmethod
     def is_undefined(cls, value):
         return True if value == UNDEFINED else False
+    
+    @classmethod
+    def is_none(cls, value):
+        return True if value is None else False

@@ -39,7 +39,7 @@ class Db():
         self._condition:dict = dict()
         "instances of Condition"
 
-        self._con = mysql.connector.connect(
+        self._conn = mysql.connector.connect(
             host=self._config["host"],
             user=self._config["user"],
             password=self._config["password"],
@@ -68,7 +68,10 @@ class Db():
                         self._entities_config[k] = e2[k]
 
     def __del__(self):
-        self._con.close()
+        self._conn.close()
+
+    def conn(self):
+        self._conn
 
     def tree_config(self) -> dict:
         return self._tree

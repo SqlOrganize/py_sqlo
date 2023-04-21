@@ -73,7 +73,6 @@ class Condition(EntityOptions):
 
             case _:
                 return self._define_condition(field_name); #si no resuelve, intenta nuevamente (ejemplo field.count.max, intentara nuevamente con field.count)
-
     
     def _default(self, field_name, option, value): 
         field = self._db.mapping(self._entity_name, self._prefix).map(field_name)
@@ -97,7 +96,6 @@ class Condition(EntityOptions):
             raise "Valor incorrecto al definir condicion _default: " + self._entity_name + " " + field_name + " " + option + " " + value
         return v
 
-
     def _quote(self, field_name, option, value):
         field = self._db.mapping(self._entity_name, self._prefix).map(field_name)
 
@@ -113,7 +111,6 @@ class Condition(EntityOptions):
 
         return "(" + field + " " + option + " " + v._sql(field_name) + ") "    
   
-
     def _boolean(self, field_name, option, value): 
         field = self._db.mapping(self._entity_name, self._prefix).map(field_name)
     
@@ -121,7 +118,6 @@ class Condition(EntityOptions):
 
         return "(" + field + " " + option + " " + v._sql(field_name) + ") "    
   
-
     def _exists(self, field_name: str, option: str, value: any) ->str:
         if(not isinstance(value, bool)):
             return ""
