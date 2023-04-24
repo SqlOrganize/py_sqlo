@@ -2,7 +2,7 @@ from datetime import datetime
 import re
 from typing import Any
 from py_sqlo.src.function.to_bool import to_bool
-from py_sqlo.src.tools.logging import Logging
+from py_sqlo.src.tools.logging import Log, Logging
 from py_sqlo.src.tools.validation import Validation
 from ..config import UNDEFINED
 from .entity_options import EntityOptions
@@ -24,7 +24,7 @@ class Values(EntityOptions):
     def __init__(self, db, entity_name: str, prefix: str = "") -> None:
         super().__init__(db, entity_name, prefix)
        
-        self._logs: Logging = Logging()
+        self._logging: Logging = Logging()
         """
         Logs de procesamiento de valores
         """
@@ -41,9 +41,18 @@ class Values(EntityOptions):
         -etc
         """
    
-    def logs(self):
-        return self._logs
+    def logging(self):
+        return self._logging
    
+    def call_values(self, method:str):
+        """
+        Ejecutar metodo en todos los valores del atributo self._values
+
+        Los metodos posibles para ejecucion no deben llevar otro parametro mas que el field_name
+        """
+        return self.call_fields(list(self._values.keys()), method)
+
+
     def set(self, field_name, value):
         """
         Seteo directo.
@@ -264,7 +273,7 @@ class Values(EntityOptions):
                 case "year":
                     raise "En construccion"
                 
-                case "_":
+                case _:
                     return "_sql_str"
 
         m = p.pop() #se resuelve la funcion ubicada mas a la derecha, que sera la ultima en ejecutarse y la que definira el formato final
@@ -286,10 +295,51 @@ class Values(EntityOptions):
         return "'{}'".format(self._db.conn().escape_string(self._values[field_name]));  
   
 
-    def call_values(self, method:str):
-        """
-        Ejecutar metodo en todos los valores del atributo self._values
 
-        Los metodos posibles para ejecucion no deben llevar otro parametro mas que el field_name
+    def check(self, field_name:str):
         """
-        return self.call_fields(list(self._values.keys()), method)
+        Validacion
+        """
+        self.logging().reset_logs(field_name)
+
+        m = "check_"+field_name.replace(".", "_")
+        if hasattr(self, m) and callable(getattr(self, m)):
+            return getattr(self, m)
+
+        checks = self._define_checks(field_name)
+        v = Validation(self._values[field_name])
+
+        for check, val in checks.items():
+            if hasattr(v, check) and callable(getattr(v, check)):
+                return getattr(v, check)(val)
+            else:
+                self.logging().add_log(field_name, Log(Log.INFO, "No existe metodo de validacion",type=check))    
+
+        for e in v.errors():
+            self.logging().add_log(field_name, type=Log(e["type"], msg=e["msg"]))
+
+        return v.is_sucess()
+    
+    def _define_checks(self, field_name):
+        """
+        Si la funcion sql de field_name no se encuentra definida por el usuario,
+        se define en funcion de data_type
+        """
+        p = field_name.split(".")
+       
+        if len(p) == 1:
+            """
+            traducir field_name sin funcion
+            """
+            return self._db.field(self._entity_name, field_name)
+
+        m = p.pop() #se resuelve la funcion ubicada mas a la derecha, que sera la ultima en ejecutarse y la que definira el formato final
+        match m: 
+            case "count" | "avg" | "sum": 
+                raise "En construccion"
+
+            case _:
+                return self._define_checks(".".join(p)); #si no resuelve, intenta nuevamente (ejemplo field.count.max, intentara nuevamente con field.count)
+   
+    
+

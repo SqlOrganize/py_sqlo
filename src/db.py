@@ -71,7 +71,7 @@ class Db():
         self._conn.close()
 
     def conn(self):
-        self._conn
+        return self._conn
 
     def tree_config(self) -> dict:
         return self._tree

@@ -300,24 +300,41 @@ class EntityQuery:
     
         return condition_mode["condition"]
 
-    def _condition_recursive(self, condition: list) -> dict:
+    def _condition_recursive(self, condition: list) -> tuple:
         """
         Metodo recursivo para definir condicion
 
         Si en la posicion 0 es un string significa que es un campo a buscar, 
         caso contrario es un nuevo conjunto (list) de campos que debe ser 
         recorrido
+
+        Return tuple, example:
+
+        - ("condition", ("valores de variables",), "concatenacion")
+        - ("nombres LIKE %s, ("%"+something+"%", ), AND_)
+
         """
 
         if isinstance(condition[0], list):
             return self._condition_iterable(condition)
 
-        option = EQUAL if not condition[1] else condition[1] #por defecto se define EQUAL
-        value = None if not condition[2] else condition[2] #hay opciones de configuracion que pueden no definir valores
-        mode = AND_ if not condition[3] else condition[3]  #el modo indica la concatenacion con la opcion precedente, se usa en una misma lista de opciones
+        try:
+            option = condition[1]
+        except IndexError:
+            option = EQUAL
+
+        try:
+            value = condition[2]
+        except IndexError:
+            value = None #hay opciones de configuracion que pueden no definir valores
+
+        try:
+            conc = condition[3]
+        except IndexError:
+            conc = AND_ #el modo indica la concatenacion con la opcion precedente
 
         condition_ = self._condition_field_check_value(condition[0], option, value)
-        return {"condition": condition_, "mode": mode}
+        return  condition_ + (conc, )
 
     def _condition_iterable(self, condition_iterable: list) -> dict:
         condition_modes:list[dict] = []

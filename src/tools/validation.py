@@ -33,6 +33,9 @@ class Validation():
         Por defecto se asigna el menos critico "info"
         """
     
+    def errors(self):
+        return self._errors 
+
     def _is_none_or_undefined(self):
         self.__class__.is_none_or_undefined(self._value)
 
@@ -55,14 +58,17 @@ class Validation():
 
         return self
 
+    def is_success(self) -> bool:
+        return True if not self.errors() else False
+
     @classmethod
-    def is_none_or_undefined(cls, value):
+    def is_none_or_undefined(cls, value) -> bool:
         return True if cls.is_none(value) or cls.is_undefined(value) else False
     
     @classmethod
-    def is_undefined(cls, value):
+    def is_undefined(cls, value) -> bool:
         return True if value == UNDEFINED else False
     
     @classmethod
-    def is_none(cls, value):
+    def is_none(cls, value) -> bool:
         return True if value is None else False

@@ -1,5 +1,15 @@
 
 
+
+class Log():
+    
+    ERROR, WARNING, SUCCESS, INFO  = 2, 1, 0, -1
+
+    def __init__(self, level=ERROR, msg="", type=None) -> None:
+        self._level = level
+        self._msg = msg
+        self._type = type 
+
 class Logging():
     """
     Clase simple para administrar logs de valores
@@ -8,7 +18,7 @@ class Logging():
     LEVEL_ERROR, LEVEL_WARNING, LEVEL_INFO = 2, 1, 0
 
     def __init__(self) -> None:
-        self._logs: dict[list[dict]] = {}
+        self._logs: dict[list[Log]] = {}
         """
         Cada elemento es tambien un diccionario con los campos "level", "type", "msg"
         Level puede tomar valores "error", "warning" o "info".
@@ -58,7 +68,7 @@ class Logging():
         self._level = self.LEVEL_INFO
         return self
     
-    def add_log(self, key: str, log: dict):
+    def add_log(self, key: str, log: Log):
         """
         Agregar log a una determinada llave
 
@@ -70,20 +80,6 @@ class Logging():
         self._logs[key].append(log)
 
         self._logs[key] = sorted(self._logs[key], key=lambda d: d["level"], reverse=True)
-
-        self._set_level(log["level"])
-
-    
-    def _set_level(self, level):
-        if level > self._level:
-            self._level = level
-
-    def _reset_level(self):
-        self._level = self.LEVEL_INFO
-
-        for log in self._logs:
-            for l in log:
-                self._set_level(self,l["level"])
 
     def level_key(self, key):
         if not key in self._logs:

@@ -141,7 +141,7 @@ class Condition(EntityOptions):
 
     def _approx(self, field_name, option, value):
         if option == APPROX: 
-            return "(lower(" + field_name + ") LIKE lower('%" + value + "%'))"
+            return ("(lower(" + field_name + ") LIKE lower(%s))",("%" + value + "%",))
 
         if option == NONAPPROX:
-            return "(lower(" + field_name + ") NOT LIKE lower('%" + value + "%'))"
+            return ("(lower(" + field_name + ") NOT LIKE lower(%s))",("%" + value + "%",))
