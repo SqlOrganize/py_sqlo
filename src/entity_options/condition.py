@@ -40,28 +40,19 @@ class Condition(EntityOptions):
     def _define_condition(self, field_name):
         p = field_name.split(".")
         if len(p) == 1:
-            return self._define_condition_field(field_name)
+            field = self._db.field(self._entity_name, field_name)
+            match field.data_type():
+                case "string" | "text":
+                    return "_quote"
+
+                case "boolean":
+                    return "_boolean"
+
+                case _:
+                    return "_default"
 
         m = p.pop() #se resuelve la funcion ubicada mas a la derecha, que sera la ultima en ejecutarse y la que definira el formato final
-        return self._define_condition_func(".".join(p), m) 
-
-    def _define_condition_field(self, field_name):
-        """
-        traducir field_name sin funcion
-        """
-        field = self._db.field(self._entity_name, field_name)
-        match field.data_type():
-            case "string" | "text":
-                return "_quote"
-
-            case "boolean":
-                return "_boolean"
-
-            case _:
-                return "_default"
-
-    def _define_condition_func(self, field_name, func):
-        match func: 
+        match m: 
             case "count" | "avg" | "sum": 
                 return "_default"
 
@@ -73,7 +64,7 @@ class Condition(EntityOptions):
 
             case _:
                 return self._define_condition(field_name); #si no resuelve, intenta nuevamente (ejemplo field.count.max, intentara nuevamente con field.count)
-    
+   
     def _default(self, field_name, option, value): 
         field = self._db.mapping(self._entity_name, self._prefix).map(field_name)
         
@@ -99,7 +90,7 @@ class Condition(EntityOptions):
         
         return v
 
-    def _quote(self, field_name, option, value):
+    def _quote(self, field_name, option, value) -> tuple:
         field = self._db.mapping(self._entity_name, self._prefix).map(field_name)
 
         c = self._exists(field, option, value)
@@ -112,7 +103,7 @@ class Condition(EntityOptions):
         
         v = self._value(field_name, option, value)
 
-        return "(" + field + " " + option + " " + v._sql(field_name) + ") "    
+        return ("(" + field + " " + option + " %s)",(v._sql(field_name),))
   
     def _boolean(self, field_name, option, value): 
         field = self._db.mapping(self._entity_name, self._prefix).map(field_name)
@@ -121,14 +112,14 @@ class Condition(EntityOptions):
 
         return "(" + field + " " + option + " " + v._sql(field_name) + ") "    
   
-    def _exists(self, field_name: str, option: str, value: any) ->str:
+    def _exists(self, field_name: str, option: str, value: any) -> tuple:
         if(not isinstance(value, bool)):
             return ""
 
         if option != EQUAL and option != NONEQUAL:
             raise "La combinacion field-option-value no está permitida para definir existencia: " + field_name + " " + option + " " + value
 
-        return "(" + field_name + " IS NOT NULL) " if (value and option == EQUAL) or (not value and option == NONEQUAL) else "(" + field_name + " IS NULL) "
+        return ("(" + field_name + " IS NOT NULL) ",()) if (value and option == EQUAL) or (not value and option == NONEQUAL) else ("(" + field_name + " IS NULL) ",())
 
     def _approx_cast(self, field_name, option, value):
         if option == APPROX: 
@@ -139,9 +130,9 @@ class Condition(EntityOptions):
 
         return ""
 
-    def _approx(self, field_name, option, value):
+    def _approx(self, field_name, option, value) -> tuple:
         if option == APPROX: 
-            return ("(lower(" + field_name + ") LIKE lower(%s))",("%" + value + "%",))
+            return ("(lower(" + field_name + ") LIKE lower(%s)) ",("%" + value + "%",))
 
         if option == NONAPPROX:
-            return ("(lower(" + field_name + ") NOT LIKE lower(%s))",("%" + value + "%",))
+            return ("(lower(" + field_name + ") NOT LIKE lower(%s)) ",("%" + value + "%",))

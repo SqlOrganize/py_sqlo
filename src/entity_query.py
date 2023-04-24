@@ -1,6 +1,6 @@
 
 from py_sqlo.src.function.concat import concat
-from .config import AND_, EQUAL, FF, NONAPPROX, OR_, NONEQUAL
+from .config import AND_, APPROX, EQUAL, FF, NONAPPROX, OR_, NONEQUAL
 from .function.add_prefix_multi_list import add_prefix_multi_list
 from .function.add_prefix_dict import add_prefix_dict
 from .function.remove_prefix_multi_list import remove_prefix_multi_list
@@ -10,12 +10,12 @@ class EntityQuery:
     def __init__(self, db, entity_name:str) -> None:
         self._db = db
         self._entity_name = entity_name
-        self._condition = []
+        self._condition = tuple()
         """
         condicion
         array multiple cuya raiz es [field,option,value], ejemplo: [["nombre","=","unNombre"],[["apellido","=","unApellido"],["apellido","=","otroApellido","OR"]]]
         """
-        
+                
         self._order = {}
         self._page = 1
         self._size = 100
@@ -69,8 +69,8 @@ class EntityQuery:
         -GROUP_CONCAT(DISTINCT persona)
         """
 
-    def cond(self, condition:list):
-        self._condition.append(condition)
+    def cond(self, condition:tuple):
+        self._condition = self._condition + condition
         return self
 
     def param(self, key:str, value): 
@@ -289,24 +289,22 @@ class EntityQuery:
 
         return sql
 
-    def _cond(self, condition):
+    def _cond(self, condition:tuple):
         """
         Metodo inicial para definir condicion
         """
         if not condition:
             return ""
         
-        condition_mode = self._condition_recursive(condition)
-    
-        return condition_mode["condition"]
+        condition_conc = self._condition_recursive(condition)
+        return condition_conc[0]
 
-    def _condition_recursive(self, condition: list) -> tuple:
+    def _condition_recursive(self, condition: tuple) -> tuple:
         """
         Metodo recursivo para definir condicion
 
         Si en la posicion 0 es un string significa que es un campo a buscar, 
-        caso contrario es un nuevo conjunto (list) de campos que debe ser 
-        recorrido
+        caso contrario es una nueva tupla
 
         Return tuple, example:
 
@@ -315,7 +313,7 @@ class EntityQuery:
 
         """
 
-        if isinstance(condition[0], list):
+        if isinstance(condition[0], tuple):
             return self._condition_iterable(condition)
 
         try:
@@ -334,24 +332,24 @@ class EntityQuery:
             conc = AND_ #el modo indica la concatenacion con la opcion precedente
 
         condition_ = self._condition_field_check_value(condition[0], option, value)
-        return  condition_ + (conc, )
+        return  condition_ + (conc, ) #se agrega a la tupla existente el conector (cond,var) -> (cond,var,conc)
 
-    def _condition_iterable(self, condition_iterable: list) -> dict:
-        condition_modes:list[dict] = []
+    def _condition_iterable(self, condition_iterable: tuple) -> tuple:
+        conditions_conc:tuple = ()
 
         for ci in condition_iterable:
-            cm = self._condition_recursive(ci)
-            condition_modes.append(cm) 
+            cc = self._condition_recursive(ci)
+            conditions_conc.append(cc) 
 
-        mode_return = condition_modes[0]["mode"]
+        mode_return = conditions_conc[0]["mode"]
         condition = ""
 
-        for cm in condition_modes:
+        for cc in conditions_conc:
             if condition:
                 condition += """
-""" + cm["mode"] + " "
+""" + cc["mode"] + " "
 
-            condition += cm["condition"]
+            condition += cc["condition"]
             
         return {
             "condition": """(
@@ -360,16 +358,18 @@ class EntityQuery:
             "mode": mode_return
         }
 
-    def _condition_field_check_value(self, field: str, option, value) -> str:
+    def _condition_field_check_value(self, field: str, option, value) -> tuple:
         """
-        Combinar parametros y definir SQL con la opcion
+        Combinar parametros y definir SQL
         """
-        if not isinstance(value, list):
+        if not isinstance(value, tuple):
             condition = self._condition_field(field, option, value)
             if not condition:
                  raise "No pudo definirse el SQL de la condicion del campo: " + self._entity_name + "." + field
             return condition
 
+
+        raise("code Must be changed")
         condition = ""
         cond = False
 
@@ -387,10 +387,12 @@ class EntityQuery:
 """ + condition + """
 )"""
 
-    
-    def _condition_field(self, field, option, value: str):
+    def _condition_field(self, field, option, value: str) -> tuple:
         """
         Traducir campo y definir SQL con la opcion
+
+        Return:
+        -("str with condition", ("tuple with vars"))
         """
         f = self._db.explode_field(self._entity_name, field)
 
@@ -399,12 +401,12 @@ class EntityQuery:
             field_sql1 = self._db.mapping(f["entity_name"], f["field_id"]).map(f["field_name"])
             field_sql2 = self._db.mapping(v["entity_name"], v["field_id"]).map(v["field_name"])
 
-            if option == NONEQUAL:
-                return "(lower(CAST(" + field_sql1 + " AS CHAR)) LIKE CONCAT('%', lower(CAST(" + field_sql2 + " AS CHAR)), '%'))"
+            if option == APPROX:
+                return ("(lower(CAST(" + field_sql1 + " AS CHAR)) LIKE CONCAT('%', lower(CAST(" + field_sql2 + " AS CHAR)), '%'))",())
             elif option == NONAPPROX:
-                return "(lower(CAST(" + field_sql1 + " AS CHAR)) NOT LIKE CONCAT('%', lower(CAST(" + field_sql2 + " AS CHAR)), '%'))"
+                return ("(lower(CAST(" + field_sql1 + " AS CHAR)) NOT LIKE CONCAT('%', lower(CAST(" + field_sql2 + " AS CHAR)), '%'))",())
             else:
-                return "(" + field_sql1 + " " + option + " " + field_sql2 + ") ";  
+                return ("(" + field_sql1 + " " + option + " " + field_sql2 + ") ",());  
     
         return self._db.condition(f["entity_name"], f["field_id"]).cond(f["field_name"], option, value)
 
