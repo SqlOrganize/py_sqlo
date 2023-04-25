@@ -1,5 +1,5 @@
 
-from py_sqlo.src.function.concat import concat
+from .function.concat import concat
 from .config import AND_, APPROX, EQUAL, FF, NONAPPROX, OR_, NONEQUAL
 from .function.add_prefix_multi_list import add_prefix_multi_list
 from .function.add_prefix_dict import add_prefix_dict

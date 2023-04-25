@@ -1,9 +1,9 @@
 from datetime import datetime
 import re
 from typing import Any
-from py_sqlo.src.function.to_bool import to_bool
-from py_sqlo.src.tools.logging import Log, Logging
-from py_sqlo.src.tools.validation import Validation
+from ..function.to_bool import to_bool
+from ..tools.logging import Log, Logging
+from ..tools.validation import Validation
 from ..config import UNDEFINED
 from .entity_options import EntityOptions
 

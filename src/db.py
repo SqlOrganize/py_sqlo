@@ -1,11 +1,9 @@
 import importlib
 import mysql.connector
-from mysql.connector.connection import MySQLConnection
 import json
 from os.path import exists
 
-from py_sqlo.src.entity_options.entity_options import EntityOptions
-from py_sqlo.src.entity_options.values import Values
+from .entity_options.values import Values
 from .function.snake_case_to_camel_case import snake_case_to_camel_case
 
 from .entity import Entity

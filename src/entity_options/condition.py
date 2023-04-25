@@ -1,4 +1,4 @@
-from py_sqlo.src.function.to_bool import to_bool
+from ..function.to_bool import to_bool
 from ..config import APPROX, EQUAL, NONAPPROX, NONEQUAL
 from .entity_options import EntityOptions
 
