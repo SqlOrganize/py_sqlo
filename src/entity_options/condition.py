@@ -42,7 +42,7 @@ class Condition(EntityOptions):
         if len(p) == 1:
             field = self._db.field(self._entity_name, field_name)
             match field.data_type():
-                case "string" | "text":
+                case "str" | "text":
                     return "_quote"
 
                 case "boolean":
@@ -81,12 +81,12 @@ class Condition(EntityOptions):
         return "(" + field + " " + option + " " + v._sql(field_name) + ") "  
     
     def _value(self, field_name, option, value):
-        v = self._db.value(self._entity_name, self._prefix)
+        v = self._db.values(self._entity_name, self._prefix)
 
-        v._set(field_name, value)
+        v.set(field_name, value)
 
-        if not v._check(field_name):
-            raise "Valor incorrecto al definir condicion _default: " + self._entity_name + " " + field_name + " " + option + " " + value
+        if not v.check(field_name):
+            raise "Valor incorrecto al definir condicion: " + self._entity_name + " " + field_name + " " + option + " " + value
         
         return v
 

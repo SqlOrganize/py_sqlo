@@ -294,10 +294,10 @@ class EntityQuery:
         Metodo inicial para definir condicion
         """
         if not condition:
-            return ""
+            return ("",())
         
         condition_conc = self._condition_recursive(condition)
-        return condition_conc[0]
+        return condition_conc
 
     def _condition_recursive(self, condition: tuple) -> tuple:
         """
@@ -368,24 +368,24 @@ class EntityQuery:
                  raise "No pudo definirse el SQL de la condicion del campo: " + self._entity_name + "." + field
             return condition
 
-
-        raise("code Must be changed")
-        condition = ""
+        condition = ("",())
         cond = False
 
         for v in value:
             if cond:
-                condition += " " + OR_ + " " if option == EQUAL else AND_ if option == NONEQUAL else False
-                if not condition:
-                    raise "Error al definir opción"
+                sql = " " + OR_ + " " if option == EQUAL else AND_ if option == NONEQUAL else False
+                if not sql:
+                    raise "Error al definir opción para " + field + " " + option + " " + value
+                condition = (condition[0] + sql, condition[1])
             else:
                 cond = True 
 
-            condition += self._condition_field_check_value(field, option, v)
-
-        return """(
-""" + condition + """
-)"""
+            sql = condition[0]
+            condition_ = self._condition_field_check_value(field, option, v)
+            condition = (sql + condition_[0], condition[1] + condition_[1],)
+        return ("""(
+""" + condition[0] + """
+)""", condition[1])
 
     def _condition_field(self, field, option, value: str) -> tuple:
         """
@@ -412,8 +412,12 @@ class EntityQuery:
 
 
     def sql(self) -> str:
-        condition = self._cond(self._condition)
-        having = self._cond(self._having)
+        c = self._cond(self._condition)
+        condition = c[0]
+        h = self._cond(self._having)
+        having = h[0]
+        v = c[1] + h[1]
+
         sql = """ SELECT DISTINCT
 """ + self._sql_fields() + """
 """ + self._from() + """
@@ -422,7 +426,7 @@ class EntityQuery:
 """ + self._group_by() + """
 """ + concat(having, 'WHERE ')
 
-        return sql
+        return (sql, v)
 
 
 
