@@ -318,7 +318,7 @@ class Values(EntityOptions):
         for e in v.errors():
             self.logging().add_log(field_name, type=Log(e["type"], msg=e["msg"]))
 
-        return v.is_sucess()
+        return v.is_success()
     
     def _define_checks(self, field_name):
         """
@@ -331,7 +331,7 @@ class Values(EntityOptions):
             """
             traducir field_name sin funcion
             """
-            return self._db.field(self._entity_name, field_name)
+            return self._db.field_config(self._entity_name, field_name)
 
         m = p.pop() #se resuelve la funcion ubicada mas a la derecha, que sera la ultima en ejecutarse y la que definira el formato final
         match m: 

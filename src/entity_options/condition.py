@@ -78,7 +78,7 @@ class Condition(EntityOptions):
 
         v = self._value(field_name, option, value)
 
-        return "(" + field + " " + option + " " + v._sql(field_name) + ") "  
+        return "(" + field + " " + option + " " + v.sql(field_name) + ") "  
     
     def _value(self, field_name, option, value):
         v = self._db.values(self._entity_name, self._prefix)
@@ -103,14 +103,14 @@ class Condition(EntityOptions):
         
         v = self._value(field_name, option, value)
 
-        return ("(" + field + " " + option + " %s)",(v._sql(field_name),))
+        return ("(" + field + " " + option + " %s)",(v.sql(field_name),))
   
     def _boolean(self, field_name, option, value): 
         field = self._db.mapping(self._entity_name, self._prefix).map(field_name)
     
         v = self._value(field_name, option, value)
 
-        return "(" + field + " " + option + " " + v._sql(field_name) + ") "    
+        return "(" + field + " " + option + " " + v.sql(field_name) + ") "    
   
     def _exists(self, field_name: str, option: str, value: any) -> tuple:
         if(not isinstance(value, bool)):

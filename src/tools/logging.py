@@ -57,7 +57,6 @@ class Logging():
         Reasignar level
         """
         self._logs.pop(key, None)
-        self._reset_level()
         return self
 
     def clear(self):
@@ -79,7 +78,7 @@ class Logging():
         
         self._logs[key].append(log)
 
-        self._logs[key] = sorted(self._logs[key], key=lambda d: d["level"], reverse=True)
+        self._logs[key] = sorted(self._logs[key], key=lambda d: d._level, reverse=True)
 
     def level_key(self, key):
         if not key in self._logs:
