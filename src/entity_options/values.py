@@ -230,71 +230,11 @@ class Values(EntityOptions):
    
     def sql(self, field_name:str):
         """
-        sql
-
-        @example
-        val.sql("some_string") # 'something'
-        val.sql("some_date") # '2000-01-01'
-        val.sql("some_int")  # 123
-        val.sql("some_datetime") # '2000-01-01 00:00:00'
+        Las libreria utilizada realiza cast directamente.
+        No hace falta convertir los datos a sql para que sean interpretados correctamente.
         """
-        m = "sql_"+field_name.replace(".", "_")
-        if hasattr(self.__class__, m) and callable(getattr(self.__class__, m)):
-            return getattr(self, m)
-
-        m = self._define_sql(field_name)
-        return getattr(self, m)(field_name)
+        return self._values[field_name]
     
-    def _define_sql(self, field_name):
-        """
-        Si la funcion sql de field_name no se encuentra definida por el usuario,
-        se define en funcion de data_type
-        """
-        p = field_name.split(".")
-       
-        if len(p) == 1:
-            """
-            traducir field_name sin funcion
-            """
-            field = self._db.field(self._entity_name, field_name)
-            match field.data_type():
-                case "year" | "time" | "date" | "timestamp":
-                    return "retornar datetime como sql"
-
-                case "int" | "float":
-                    return "_sql_number"
-                
-                case "bool":
-                    raise "En construccion"
-                
-                case "date":
-                    raise "En construccion"
-                
-                case "year":
-                    raise "En construccion"
-                
-                case _:
-                    return "_sql_str"
-
-        m = p.pop() #se resuelve la funcion ubicada mas a la derecha, que sera la ultima en ejecutarse y la que definira el formato final
-        match m: 
-            case "count" | "avg" | "sum": 
-                raise "En construccion"
-
-            case _:
-                return self._define_sql(".".join(p)); #si no resuelve, intenta nuevamente (ejemplo field.count.max, intentara nuevamente con field.count)
-   
-
-    def _sql_str(self, field_name):
-        if not field_name in self._values and Validation.is_undefined(self._values[field_name]):
-            raise "No se puede definir sql de un valor no definido"
-        
-        if Validation.is_none(self._values[field_name]):
-            return "null"
-        
-        return "'{}'".format(self._db.conn().escape_string(self._values[field_name]));  
-  
-
 
     def check(self, field_name:str):
         """
