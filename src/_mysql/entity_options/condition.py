@@ -1,51 +1,8 @@
-from ..function.to_bool import to_bool
-from .entity_options import EntityOptions
-from .._mysql.options import OPTIONS
+from ...function.to_bool import to_bool
+from ..entity_options.condition import Condition
+from ..options import OPTIONS
 
-class Condition(EntityOptions):
-    """
-    Definir condicion a traves de 3 elementos "field, option y value" donde 
-    value es un valor válido para el field
-
-    Sintaxis MySQL, MariaDB.
-    
-    Ejemplo de subclase opcional:
-
-    -class ComisionCondition(Condition):
-        def numero(self):
-           return '''
-    some sql condition
-'''
-
-    Las subclases deben soportar la sintaxis del motor que se encuentran 
-    utilizando.
-    """
-
-    def cond(self, field_name: str, option: str, value: any) -> dict:
-        """ 
-        Verificar la existencia de metodo exclusivo, si no exite, buscar metodo
-        predefinido.
-
-        Ejemplo: 
-        -condition.cond("nombre", APPROX, "something")
-        -condition.cond("fecha_alta.max.y", EQUAL, "2000"); //aplicar max, luego y
-        """
-        m = field_name.replace(".", "_")
-        if hasattr(self.__class__, m) and callable(getattr(self.__class__, m)):
-            return getattr(self, m)(option, value)
-
-        m = self._define_condition(field_name)
-        return getattr(self, m)(field_name, option, value)
-
-    def _value(self, field_name, value):
-        v = self._db.values(self._entity_name, self._prefix)
-
-        v.sset(field_name, value)
-
-        if not v.check(field_name):
-            raise "Valor incorrecto al definir condicion: " + self._entity_name + " " + field_name + "  " + value
-        
-        return v.sql(field_name)
+class ConditionMysql(Condition):
 
     def _define_condition(self, field_name):
         p = field_name.split(".")
