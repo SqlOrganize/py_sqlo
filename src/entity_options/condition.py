@@ -42,7 +42,7 @@ class Condition(EntityOptions):
         if len(p) == 1:
             field = self._db.field(self._entity_name, field_name)
             match field.data_type():
-                case "str" | "text":
+                case "str":
                     return "_quote"
 
                 case "boolean":

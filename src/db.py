@@ -10,6 +10,7 @@ from .entity import Entity
 from .entity_options.mapping import Mapping
 from .entity_options.condition import Condition
 from .entity_query import EntityQuery
+from ._mysql.entity_query import EntityQueryMysql
 from .entity_tools import EntityTools
 from .field import Field
 
@@ -147,7 +148,7 @@ class Db():
         return self._field[entity_name][field_name]
 
     def query(self, entity_name) -> EntityQuery:
-        return EntityQuery(self, entity_name)
+        return EntityQueryMysql(self, entity_name)
     
     def tools(self, entity_name) -> EntityTools:
         if entity_name not in self._tools:
