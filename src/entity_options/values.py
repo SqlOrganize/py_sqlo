@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 import re
 from typing import Any
 from ..function.to_bool import to_bool
@@ -99,8 +99,8 @@ class Values(EntityOptions):
                 case "year":
                     return "_sset_year"
 
-                case "time" | "date" | "timestamp":
-                    return "_sset_datetime"
+                case "datetime.date" | "date":
+                    return "_set_date"
 
                 case "integer":
                     return "_sset_int"
@@ -128,6 +128,13 @@ class Values(EntityOptions):
             case _:
                 return self._define_sset(".".join(p)); #si no resuelve, intenta nuevamente (ejemplo field.count.max, intentara nuevamente con field.count)
    
+    
+    def _sset_date(self, field_name, value: Any):
+        """value must be a date or a json string date"""
+        self._values[field_name] = datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ') if value and not isinstance(value, datetime.date) else value
+        return self._values[field_name]
+    
+
     def _sset_datetime(self, field_name, value: Any):
         """notice datetime is a subclass of date"""
         self._values[field_name] = datetime.strptime(value, '%d/%m/%y %H:%M:%S') if value and not isinstance(value, datetime) else value
