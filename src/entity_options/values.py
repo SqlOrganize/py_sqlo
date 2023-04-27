@@ -86,7 +86,7 @@ class Values(EntityOptions):
     def _define_sset(self, field_name):
         """
         Si la funcion sset de field_name no se encuentra definida por el usuario,        
-        se define en funcion de data_type
+        se define en funcion de type
         """
         p = field_name.split(".")
        
@@ -95,7 +95,7 @@ class Values(EntityOptions):
             traducir field_name sin funcion
             """
             field = self._db.field(self._entity_name, field_name)
-            match field.data_type():
+            match field.type():
                 case "year":
                     return "_sset_year"
 
@@ -137,7 +137,7 @@ class Values(EntityOptions):
         self._values[field_name] = str(value)
 
     def _sset_str(self, field_name, value: Any):
-        self._values[field_name] = re.sub(' +', str(value).strip())
+        self._values[field_name] = re.sub(' +', ' ', str(value).strip())
         return self._values[field_name]
 
     def _sset_int(self, field_name, value: Any):
@@ -163,7 +163,7 @@ class Values(EntityOptions):
     def _define_default(self, field_name):
         """
         Si el valor por defecto de field_name no se encuentra definida por el usuario,        
-        se define en funcion de data_type
+        se define en funcion de type
         """
         p = field_name.split(".")
        
@@ -172,7 +172,7 @@ class Values(EntityOptions):
             traducir field_name sin funcion
             """
             field = self._db.field(self._entity_name, field_name)
-            match field.data_type():
+            match field.type():
                 case "date" | "datetime" | "year" | "time":
                     return "retornar fecha actual en formato json" if "cur" in field.default().lower() else field.default()
 
@@ -201,7 +201,7 @@ class Values(EntityOptions):
     def _define_json(self, field_name):
         """
         Si la funcion json de field_name no se encuentra definida por el usuario,
-        se define en funcion de data_type
+        se define en funcion de type
         """
         p = field_name.split(".")
        
@@ -210,7 +210,7 @@ class Values(EntityOptions):
             traducir field_name sin funcion
             """
             field = self._db.field(self._entity_name, field_name)
-            match field.data_type():
+            match field.type():
                 case "year" | "time" | "date" | "timestamp":
                     return "retornar datetime como json"
 
@@ -263,7 +263,7 @@ class Values(EntityOptions):
     def _define_checks(self, field_name):
         """
         Si la funcion sql de field_name no se encuentra definida por el usuario,
-        se define en funcion de data_type
+        se define en funcion de type
         """
         p = field_name.split(".")
        

@@ -21,9 +21,6 @@ class Field():
         """ valor minimo """ 
 
         self._type = None
-        """ tipo de datos definidos en la base de datos """ 
-
-        self._data_type = "string"
         """ Tipo de datos generico 
             int
             blob
@@ -79,8 +76,8 @@ class Field():
     def is_main(self):
         return True if self.name() in self._db.entity(self._entity_name).main() else False
 
-    def data_type(self):
-        return self._data_type
+    def type(self):
+        return self._type
     
     def default(self):
         return self._default

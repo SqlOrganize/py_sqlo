@@ -5,38 +5,23 @@ from .options import OPTIONS
 
 class EntityQueryMysql(EntityQuery):
 
-    def _sql_cond_field(self, field, option, value: str) -> dict:
-        """
-        Traducir campo y definir SQL con la opcion
+    def sql(self) -> dict:
+        c = self._sql_cond(self._condition)
+        print(c)
+#         condition = c[0]
+#         h = self._sql_cond(self._having)
+#         having = h[0]
+#         v = c[1] + h[1]
 
-        Return:
-        -("str with condition", ("tuple with vars"))
-        """
-        f = self._db.explode_field(self._entity_name, field)
+#         sql = """ SELECT DISTINCT
+# """ + self._sql_fields() + """
+# """ + self._from() + """
+# """ + self._join() + """
+# """ + concat(condition, 'WHERE ') + """
+# """ + self._group_by() + """
+# """ + concat(having, 'WHERE ')
 
-        if value[0].startswith("$"): #definir condicion entre fields
-            v = self._db.explode_field(self._entity_name, value[0].replace("$", '', 1))
-            field_sql1 = self._db.mapping(f["entity_name"], f["field_id"]).map(f["field_name"])
-            field_sql2 = self._db.mapping(v["entity_name"], v["field_id"]).map(v["field_name"])
-
-            if option == "APPROX":
-                return {
-                    "sql":"(lower(CAST(" + field_sql1 + " AS CHAR)) LIKE CONCAT('%', lower(CAST(" + field_sql2 + " AS CHAR)), '%'))",
-                    "params":()
-                }
-            elif option == "NONAPPROX":
-                return {
-                    "sql":"(lower(CAST(" + field_sql1 + " AS CHAR)) NOT LIKE CONCAT('%', lower(CAST(" + field_sql2 + " AS CHAR)), '%'))",
-                    "params":()
-                }
-            else:
-                {
-                    "sql":"(" + field_sql1 + " " + option + " " + field_sql2 + ") ",
-                    "params":()
-                }
-    
-        return self._db.condition(f["entity_name"], f["field_id"]).cond(f["field_name"], option, value)
-
+#         return {"sql":sql, "params":v}
 
     def _sql_fields(self) -> str:
         """
@@ -161,7 +146,7 @@ class EntityQueryMysql(EntityQuery):
         try:
             option = condition[1]
         except IndexError:
-            option = EQUAL
+            option = "EQUAL"
 
         try:
             value = condition[2]
@@ -171,7 +156,7 @@ class EntityQueryMysql(EntityQuery):
         try:
             con = condition[3]
         except IndexError:
-            con = AND_ #el modo indica la concatenacion con la opcion precedente
+            con = "AND" #el modo indica la concatenacion con la opcion precedente
 
         condition_ = self._sql_cond_field_check_value(condition[0], option, value)
         condition_["con"] = con #se agrega el conector
@@ -191,7 +176,7 @@ class EntityQueryMysql(EntityQuery):
         }
         """
     
-        conditions_conc:tuple = ()
+        conditions_conc = tuple()
         """
         Tupla de dict
         ({"sql":..., "params":..., "con":...}, {"sql":..., "params":..., "con":...}, ...)
@@ -200,7 +185,7 @@ class EntityQueryMysql(EntityQuery):
 
         for ci in condition_iterable:
             cc = self._sql_cond_recursive(ci)
-            conditions_conc = conditions_conc + cc
+            conditions_conc = conditions_conc + (cc, )
        
         ret = {
             "sql": "",
@@ -233,40 +218,63 @@ class EntityQueryMysql(EntityQuery):
                  raise "No pudo definirse el SQL de la condicion del campo: " + self._entity_name + "." + field
             return condition
 
-        condition = ("",())
-        cond = False
+        condition = {
+            "sql":"",
+            "params":()
+        }
+        cond = False #flag para indicar que debe imprimirse condicion
 
         for v in value:
             if cond:
-                sql = " " + OPTIONS["OR"] + " " if option == "EQUAL" else OPTIONS["AND"] if option == "NONEQUAL" else False
+                sql = " {} ".format(OPTIONS["OR"]) if option == "EQUAL" or option == "APPROX" else " {} ".format(OPTIONS["AND"]) if option == "NONEQUAL" or option == "NONAPPROX" else False
                 if not sql:
                     raise "Error al definir opción para " + field + " " + option + " " + value
-                condition = (condition[0] + sql, condition[1])
+                condition["sql"] += sql
+
             else:
                 cond = True 
 
-            sql = condition[0]
             condition_ = self._sql_cond_field_check_value(field, option, v)
-            condition = (sql + condition_[0], condition[1] + condition_[1])
-        return ("""(
-""" + condition[0] + """
-)""", condition[1])
+            condition["sql"] += condition_["sql"]
+            condition["params"] = condition["params"] + condition_["params"]
 
+        return {
+            "sql":"""(
+""" + condition["sql"] + """
+)""",
+            "params":condition["params"]
+        }
+
+    def _sql_cond_field(self, field, option, value: str) -> dict:
+        """
+        Traducir campo y definir SQL con la opcion
+
+        Return:
+        -("str with condition", ("tuple with vars"))
+        """
+        f = self._db.explode_field(self._entity_name, field)
+
+        if isinstance(value, str) and value[0].startswith("$"): #definir condicion entre fields
+            v = self._db.explode_field(self._entity_name, value[0].replace("$", '', 1))
+            field_sql1 = self._db.mapping(f["entity_name"], f["field_id"]).map(f["field_name"])
+            field_sql2 = self._db.mapping(v["entity_name"], v["field_id"]).map(v["field_name"])
+
+            if option == "APPROX":
+                return {
+                    "sql":"(lower(CAST(" + field_sql1 + " AS CHAR)) LIKE CONCAT('%', lower(CAST(" + field_sql2 + " AS CHAR)), '%'))",
+                    "params":()
+                }
+            elif option == "NONAPPROX":
+                return {
+                    "sql":"(lower(CAST(" + field_sql1 + " AS CHAR)) NOT LIKE CONCAT('%', lower(CAST(" + field_sql2 + " AS CHAR)), '%'))",
+                    "params":()
+                }
+            else:
+                {
+                    "sql":"(" + field_sql1 + " " + option + " " + field_sql2 + ") ",
+                    "params":()
+                }
     
+        return self._db.condition(f["entity_name"], f["field_id"]).cond(f["field_name"], option, value)
 
-    def sql(self) -> dict:
-        c = self._sql_cond(self._condition)
-        condition = c[0]
-        h = self._sql_cond(self._having)
-        having = h[0]
-        v = c[1] + h[1]
 
-        sql = """ SELECT DISTINCT
-""" + self._sql_fields() + """
-""" + self._from() + """
-""" + self._join() + """
-""" + concat(condition, 'WHERE ') + """
-""" + self._group_by() + """
-""" + concat(having, 'WHERE ')
-
-        return {"sql":sql, "params":v}

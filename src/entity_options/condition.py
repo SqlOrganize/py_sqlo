@@ -51,7 +51,7 @@ class Condition(EntityOptions):
         p = field_name.split(".")
         if len(p) == 1:
             field = self._db.field(self._entity_name, field_name)
-            match field.data_type():
+            match field.type():
                 case "str":
                     return "_str"
 
@@ -80,32 +80,32 @@ class Condition(EntityOptions):
         field = self._db.mapping(self._entity_name, self._prefix).map(field_name)
         
         c = self._exists(field, opt, value)
-        if c:
+        if c["sql"]:
             return c
 
         c = self._approx_cast(field, opt, value)
-        if c:
+        if c["sql"]:
             return c
 
         return {
             "sql":"(" + field + " " + OPTIONS[opt] + " %s) ",
-            "params":self._value(field_name, value)
+            "params":(self._value(field_name, value), )
         }
     
     def _str(self, field_name, opt, value) -> tuple:
         field = self._db.mapping(self._entity_name, self._prefix).map(field_name)
 
         c = self._exists(field, opt, value)
-        if c:
+        if c["sql"]:
             return c
 
         c = self._approx(field, opt, value)
-        if c:
+        if c["sql"]:
             return c
         
         return {
             "sql":"(" + field + " " + OPTIONS[opt] + " %s) ",
-            "params":self._value(field_name, value)
+            "params":(self._value(field_name, value), )
         }
     
     def _bool(self, field_name, option, value): 
@@ -113,7 +113,7 @@ class Condition(EntityOptions):
 
         return {
             "sql":"(" + field + " " + OPTIONS[option] + " %s) ",
-            "params":self._value(field_name, value)
+            "params":(self._value(field_name, value), )
         }
 
     def _exists(self, field_name: str, option: str, value: any) -> tuple:
@@ -134,14 +134,14 @@ class Condition(EntityOptions):
     def _approx_cast(self, field_name, option, value):
         if option == "APPROX": 
             return {
-                "sql":"(CAST(" + field_name + " AS CHAR) LIKE %s) ",
-                "params":("%" + value + "%")
+                "sql":"(LOWER(CAST(" + field_name + " AS CHAR)) LIKE LOWER(%s)) ",
+                "params":("%" + value + "%", )
             }
 
         if option == "NONAPPROX":
             return {
-                "sql":"(CAST(" + field_name + " AS CHAR) NOT LIKE %s) ",
-                "params":("%" + value + "%")
+                "sql":"(LOWER(CAST(" + field_name + " AS CHAR)) NOT LIKE LOWER(%s)) ",
+                "params":("%" + value + "%", )
             }
 
         return { "sql":"", "params":() }
@@ -150,11 +150,14 @@ class Condition(EntityOptions):
         if option == "APPROX": 
             return {
                 "sql":"(lower(" + field_name + ") LIKE lower(%s)) ",
-                "params":("%" + value + "%",)
+                "params":("%" + value + "%", )
             }
 
         if option == "NONAPPROX":
             return {
                 "sql": "(lower(" + field_name + ") NOT LIKE lower(%s)) ",
-                "params":("%" + value + "%",)
+                "params":("%" + value + "%", )
             }
+        
+        return { "sql":"", "params":() }
+
