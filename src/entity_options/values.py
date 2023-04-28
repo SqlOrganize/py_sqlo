@@ -1,5 +1,7 @@
 import datetime
 import re
+from dateutil.parser import parse
+
 from typing import Any
 from ..function.to_bool import to_bool
 from ..tools.logging import Log, Logging
@@ -100,7 +102,7 @@ class Values(EntityOptions):
                     return "_sset_year"
 
                 case "datetime.date" | "date":
-                    return "_set_date"
+                    return "_sset_date"
 
                 case "integer":
                     return "_sset_int"
@@ -130,19 +132,17 @@ class Values(EntityOptions):
    
     
     def _sset_date(self, field_name, value: Any):
-        """value must be a date or a json string date"""
-        self._values[field_name] = datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ') if value and not isinstance(value, datetime.date) else value
+        self._values[field_name] = value if Validation.is_none_or_undefined(value) or isinstance(value, datetime.date) else parse(value).date()
         return self._values[field_name]
-    
 
     def _sset_datetime(self, field_name, value: Any):
-        """notice datetime is a subclass of date"""
-        self._values[field_name] = datetime.strptime(value, '%d/%m/%y %H:%M:%S') if value and not isinstance(value, datetime) else value
+        self._values[field_name] = value  if Validation.is_none_or_undefined(value) or isinstance(value, datetime.datetime) else parse(value)
         return self._values[field_name]
     
-    def _sset_year(self, field_name, value: Any):
-        self._values[field_name] = str(value)
-
+    def _sset_time(self, field_name, value: Any):
+        self._values[field_name] = value  if Validation.is_none_or_undefined(value) or isinstance(value, datetime.time) else parse(value)
+        return self._values[field_name]
+    
     def _sset_str(self, field_name, value: Any):
         self._values[field_name] = re.sub(' +', ' ', str(value).strip())
         return self._values[field_name]
@@ -158,6 +158,8 @@ class Values(EntityOptions):
     def _sset_bool(self, field_name, value: Any):
         self._values[field_name] = to_bool(value)
         return self._values[field_name]
+
+
 
     def default(self, field_name:str):
         m = "default_"+field_name.replace(".", "_")

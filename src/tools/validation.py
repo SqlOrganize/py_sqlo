@@ -2,6 +2,7 @@
 
 import re
 from ..config import UNDEFINED
+import datetime
 
 class Validation():
     """
@@ -44,10 +45,15 @@ class Validation():
         self.__class__.is_undefined(self._value)
 
     def type(self, type):
-        return isinstance(self._value, eval(type))
+        match type:
+            case "year":
+                return isinstance(self._value, int)    
+        
+            case _:
+                return isinstance(self._value, eval(type))
     
     def names(self):
-        if self.is_none_or_undefined():
+        if self._is_none_or_undefined():
             return self
         
         pattern = re.compile("/[^a-zA-ZáéíóúñÁÉÍÓÚÑçÇüÜ\s\']/")
