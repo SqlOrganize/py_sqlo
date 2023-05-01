@@ -202,7 +202,7 @@ class EntityQuery:
         return self
 
     @abstractmethod
-    def sql(self) -> dict:
+    def build(self) -> dict:
         """
         Construir SQL
 
