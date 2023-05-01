@@ -45,6 +45,7 @@ class Validation():
         self.__class__.is_undefined(self._value)
 
     def type(self, type):
+        #TODO el math type no debe estar en validation, es propio del driver
         match type:
             case "date":
                 return isinstance(self._value, datetime.date)
