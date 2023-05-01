@@ -46,6 +46,15 @@ class Validation():
 
     def type(self, type):
         match type:
+            case "date":
+                return isinstance(self._value, datetime.date)
+
+            case "datetime":
+                return isinstance(self._value, datetime.datetime)
+                
+            case "time":
+                return isinstance(self._value, datetime.time)
+                
             case "year":
                 return isinstance(self._value, int)    
         

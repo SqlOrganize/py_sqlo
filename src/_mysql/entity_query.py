@@ -15,7 +15,7 @@ class EntityQueryMysql(EntityQuery):
 
 #         sql = """ SELECT DISTINCT
 # """ + self._sql_fields() + """
-# """ + self._from() + """
+# """ + self._sql_from() + """
 # """ + self._join() + """
 # """ + concat(condition, 'WHERE ') + """
 # """ + self._group_by() + """
@@ -87,7 +87,7 @@ class EntityQueryMysql(EntityQuery):
         return "GROUP BY "+", ".join(group)+"""
 """
     
-    def _from(self) -> str:    
+    def _sql_from(self) -> str:    
         return """ FROM 
 """ + self._db.entity(self._entity_name).schema_name_alias() + """
 """

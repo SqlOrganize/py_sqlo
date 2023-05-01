@@ -204,11 +204,13 @@ class EntityQuery:
     @abstractmethod
     def build(self) -> dict:
         """
-        Construir SQL
+        Construir operacion
 
-        El sql debe ser invocado al finalizar todas las asignaciones de atributos.
-        Posponer la construccion del SQL permite que sea mas flexible la invocacion de parametros
-        La asignacion de atributos puede hacerse en cualquier orden
+        Debe ser invocado al finalizar todas las asignaciones de atributos.
+
+        Posponer la construccion de la operacion, da flexibilidad a la invoca-
+        cion de parametros. La asignacion de atributos puede hacerse en cual-
+        quier orden
         """
         pass
 
