@@ -20,7 +20,7 @@ class Db():
     def __init__(self, config) -> None:
         self._config:dict = config
 
-        self._fields_config = dict()
+        self._fields = dict()
         "json configuration of fields"
     
         self._entity = dict()
@@ -52,19 +52,19 @@ class Db():
             self._relations = json.load(file)
     
         with open(self._config["path_model"]+"_entities.json", 'r', encoding='utf-8') as file:
-            self._entities_config = json.load(file)
+            self._entities = json.load(file)
 
         if exists(self._config["path_model"]+"entities.json"):
             with open(self._config["path_model"]+"entities.json", 'r', encoding='utf-8') as file:
                 e2 = json.load(file)
 
-                for k, v in self._entities_config.items():
+                for k, v in self._entities.items():
                     if k in e2:
-                        self._entities_config[k].update(e2[k])
+                        self._entities[k].update(e2[k])
 
                 for k, v in e2.items():
-                    if k not in self._entities_config:
-                        self._entities_config[k] = e2[k]
+                    if k not in self._entities:
+                        self._entities[k] = e2[k]
 
     def __del__(self):
         self._conn.close()
@@ -72,65 +72,65 @@ class Db():
     def conn(self):
         return self._conn
 
-    def tree_config(self) -> dict:
+    def tree(self) -> dict:
         return self._tree
 
-    def relations_config(self) -> dict:
+    def relations(self) -> dict:
         return self._relations     
 
-    def entities_config(self, entity_name):
+    def entities_entity(self, entity_name):
         """ 
         configuracion de entidad
 
         Por cada entidad consultada es obligatorio que haya una configuracion
         """
-        return self._entities_config[entity_name]
+        return self._entities[entity_name]
 
-    def field_config(self, entity_name, field_name):
+    def fields_field(self, entity_name, field_name):
         """ 
         configuracion de field
 
         Si no existe el field consultado se devuelve una configuracion vacia
         No es obligatorio que exista el field en la configuracion, se cargaran los parametros por defecto.
         """
-        config = self.fields_config(entity_name) 
+        config = self.fields_entity(entity_name) 
         return config[field_name] if field_name in config else {} 
 
-    def fields_config(self, entity_name) -> dict:
+    def fields_entity(self, entity_name) -> dict:
         """ 
         configuracion completa de fields de una entidad
 
         Por cada entidad consultada es obligatorio que haya una configuracion de fields
         """
-        if entity_name not in self._fields_config:
+        if entity_name not in self._fields:
             with open(self._config["path_model"]+"fields/_"+entity_name+".json", 'r', encoding='utf-8') as file:
-                self._fields_config[entity_name] = json.load(file)
+                self._fields[entity_name] = json.load(file)
 
             if exists(self._config["path_model"]+"fields/"+entity_name+".json"):
                 with open(self._config["path_model"]+"fields/"+entity_name+".json", 'r', encoding='utf-8') as file:
                     e2 = json.load(file)
 
-                    for k, v in self._fields_config[entity_name].items():
+                    for k, v in self._fields[entity_name].items():
                         if k in e2:
-                            self._fields_config[entity_name][k].update(e2[k])
+                            self._fields[entity_name][k].update(e2[k])
 
                     for k, v in e2.items():
-                        if k not in self._fields_config[entity_name]:
-                            self._fields_config[entity_name][k] = e2[k]
+                        if k not in self._fields[entity_name]:
+                            self._fields[entity_name][k] = e2[k]
 
-        return self._fields_config[entity_name] 
+        return self._fields[entity_name] 
          
     def tree(self, entity_name: str) -> dict:
         return self._tree[entity_name]
     
-    def relations(self, entity_name) -> dict:
+    def relations_entity(self, entity_name) -> dict:
         return self._relations[entity_name]       
     
     def entity_names(self) -> list:
         return list(self._tree.keys())
 
     def field_names(self, entity_name) -> list:
-        return list(self.fields_config(entity_name).keys())
+        return list(self.fields_entity(entity_name).keys())
     
     def entity(self, entity_name:str) -> Entity:
         if entity_name not in self._entity:
@@ -162,18 +162,18 @@ class Db():
         if(len(f) == 2):
             return {
                 "field_id": f[0],    
-                "entity_name": self.relations(entity_name)[f[0]]["entity_name"],
+                "entity_name": self.relations_entity(entity_name)[f[0]]["entity_name"],
                 "field_name": f[1]
             }
-        else:
-            return {
-                "field_id": "",
-                "entity_name": entity_name,
-                "field_name": field_name
-            }
+
+        return {
+            "field_id": "",
+            "entity_name": entity_name,
+            "field_name": field_name
+        }
         
     def field_by_id(self, entity_name:str, field_id:str) -> Field:
-        r = self.relations(entity_name)
+        r = self.relations_entity(entity_name)
         return self.field(entity_name, r[field_id]["field_name"])
     
     def mapping(self, entity_name: str, field_id:str = "") -> Mapping:
@@ -204,7 +204,7 @@ class Db():
         
         return self._condition[entity_name]
 
-    def values(self, entity_name: str, field_id:str = "") -> Condition:
+    def values(self, entity_name: str, field_id:str = "") -> Values:
         try:
             m = importlib.import_module("src.values."+entity_name)
             Values_ = getattr(m, snake_case_to_camel_case(entity_name)+"Values")

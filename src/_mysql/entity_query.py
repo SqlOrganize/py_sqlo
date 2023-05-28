@@ -6,10 +6,8 @@ from .options import OPTIONS
 class EntityQueryMysql(EntityQuery):
 
     def sql(self) -> dict:
-        c = self._sql_cond(self._condition)
-        print(c)
-#         condition = c[0]
-#         h = self._sql_cond(self._having)
+        cond = self._sql_cond(self._condition)
+        hav = self._sql_cond(self._having)
 #         having = h[0]
 #         v = c[1] + h[1]
 
