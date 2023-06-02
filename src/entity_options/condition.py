@@ -73,7 +73,7 @@ class Condition(EntityOptions):
                 return "_str"
 
             case _:
-                return self._define_condition(field_name); #si no resuelve, intenta nuevamente (ejemplo field.count.max, intentara nuevamente con field.count)
+                return self._define_condition(p.join(".")); #si no resuelve, intenta nuevamente (ejemplo field.count.max, intentara nuevamente con field.count)
 
     
     def _default(self, field_name, opt, value): 
