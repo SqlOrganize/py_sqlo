@@ -10,7 +10,7 @@ class EntityOptions:
     def pf(self):
         """ prefijo fields
         """
-        return  self._prefix if self._prefix + "-" else ""
+        return  self._prefix + "-" if self._prefix  else ""
 
     def pt(self):
         """ prefijo table
